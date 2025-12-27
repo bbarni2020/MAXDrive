@@ -16,6 +16,33 @@
   animation: card-in 0.25s ease both;
 }
 
+.app-card.compact {
+  padding: 16px;
+  min-height: 140px;
+  border-radius: 16px;
+  animation: card-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.app-card.compact:nth-child(1) { animation-delay: 0.05s; }
+.app-card.compact:nth-child(2) { animation-delay: 0.1s; }
+.app-card.compact:nth-child(3) { animation-delay: 0.15s; }
+.app-card.compact:nth-child(4) { animation-delay: 0.2s; }
+.app-card.compact:nth-child(5) { animation-delay: 0.25s; }
+.app-card.compact:nth-child(6) { animation-delay: 0.3s; }
+.app-card.compact:nth-child(7) { animation-delay: 0.35s; }
+.app-card.compact:nth-child(8) { animation-delay: 0.4s; }
+
+.app-card.compact .app-card-icon-wrap {
+  width: 90px;
+  height: 90px;
+  margin-bottom: 10px;
+}
+
+.app-card.compact .app-card-name {
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+
 .app-card:hover {
   background: transparent;
   box-shadow: none;
@@ -23,7 +50,16 @@
 }
 
 .app-card:active {
-  transform: scale(0.98);
+  transform: scale(0.95);
+}
+
+.app-card.compact:hover {
+  transform: translateY(-3px) scale(1.05);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.app-card.compact:active {
+  transform: scale(0.92);
 }
 .app-card-icon-wrap {
   width: 76px;
@@ -85,9 +121,29 @@
   .app-card-name {
     font-size: 0.9rem;
   }
+
+  .app-card.compact {
+    min-height: 130px;
+    padding: 14px;
+  }
+
+  .app-card.compact .app-card-icon-wrap {
+    width: 80px;
+    height: 80px;
+  }
+
+  .app-card.compact .app-card-name {
+    font-size: 0.85rem;
+  }
 }
 
 @keyframes card-in {
-  from { opacity: 0; transform: scale(0.98); }
-  to { opacity: 1; transform: scale(1); }
+  from { 
+    opacity: 0; 
+    transform: scale(0.8) translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1) translateY(0); 
+  }
 }

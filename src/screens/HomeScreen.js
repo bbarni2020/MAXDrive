@@ -3,7 +3,7 @@ import Car3D from '../components/Car3D';
 import SpeedDisplay from '../components/SpeedDisplay';
 import RPMGauge from '../components/RPMGauge';
 import obdConnector from '../utils/obdConnector';
-import { checkForUpdate, performUpdate } from '../utils/updater';
+import { checkForUpdate } from '../utils/updater';
 import UpdateBanner from '../components/UpdateBanner';
 import '../styles/HomeScreen.css';
 import { FaMapMarkedAlt, FaBroadcastTower, FaCar, FaThLarge } from 'react-icons/fa';
@@ -43,7 +43,7 @@ function HomeScreen({ onNavigate, onStartUpdate }) {
     { id: 1, name: 'Navigation', icon: <FaMapMarkedAlt /> },
     { id: 2, name: 'Radio', icon: <FaBroadcastTower /> },
     { id: 3, name: 'CarPlay', icon: <FaCar /> },
-    { id: 4, name: 'Apps', icon: <FaThLarge />, action: () => onNavigate('apps') },
+    { id: 4, name: 'Apps', icon: <FaThLarge /> },
   ];
 
   return (
@@ -71,14 +71,13 @@ function HomeScreen({ onNavigate, onStartUpdate }) {
 
       <div className="nav-bar">
         {navItems.map(item => (
-          <button 
+          <div 
             key={item.id}
             className="nav-item"
-            onClick={item.action || null}
           >
             <span className="nav-icon">{item.icon}</span>
             <span className="nav-label">{item.name}</span>
-          </button>
+          </div>
         ))}
       </div>
     </div>

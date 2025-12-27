@@ -61,27 +61,12 @@
   background: transparent;
   border: none;
   border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
   padding: 12px;
-}
-
-.nav-item:hover {
-  background: rgba(26, 29, 34, 0.6);
-}
-
-.nav-item:active {
-  background: #1A1D22;
 }
 
 .nav-icon {
   font-size: 2rem;
   color: #8E9399;
-  transition: color 0.2s ease;
-}
-
-.nav-item:hover .nav-icon {
-  color: #B1121A;
 }
 
 .nav-label {
@@ -90,11 +75,6 @@
   color: #B5B8BD;
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  transition: color 0.2s ease;
-}
-
-.nav-item:hover .nav-label {
-  color: #E11D2E;
 }
 
 @media (max-width: 1200px) {

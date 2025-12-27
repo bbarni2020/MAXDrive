@@ -9,16 +9,13 @@ function AppsScreen({ onNavigate }) {
   const [page, setPage] = useState(0);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    loadApps();
-  }, []);
-
   const loadApps = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const apps = await androidBridge.getInstalledApps();
-      setAllApps(Array.isArray(apps) ? apps.sort((a, b) => (a.name || '').localeCompare(b.name || '')) : []);
+      const filteredApps = Array.isArray(apps) ? apps.filter(app => app.packageName !== 'com.maxdrive.app') : [];
+      setAllApps(filteredApps.sort((a, b) => (a.name || '').localeCompare(b.name || '')));
     } catch (err) {
       setError('Failed to load apps');
       setAllApps([]);
@@ -26,6 +23,10 @@ function AppsScreen({ onNavigate }) {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    loadApps();
+  }, [loadApps]);
 
   const filteredApps = allApps;
 
