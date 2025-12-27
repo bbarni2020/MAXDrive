@@ -1,0 +1,141 @@
+.home-screen {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #0B0C0E;
+  padding: 0;
+  overflow: hidden;
+}
+
+.dashboard-main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 20px;
+  padding: 20px;
+  align-items: center;
+}
+
+.gauge-left,
+.gauge-right {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.car-center {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.nav-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: #14161A;
+  border-top: 1px solid #8E9399;
+  height: 80px;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #0B0C0E;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 12px;
+}
+
+.nav-item:hover {
+  background: #14161A;
+}
+
+.nav-item:active {
+  background: #1A1D22;
+}
+
+.nav-icon {
+  font-size: 1.5rem;
+  color: #8E9399;
+  transition: color 0.2s ease;
+}
+
+.nav-item:hover .nav-icon {
+  color: #B1121A;
+}
+
+.nav-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #8E9399;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: color 0.2s ease;
+}
+
+.nav-item:hover .nav-label {
+  color: #B5B8BD;
+}
+
+@media (max-width: 1200px) {
+  .dashboard-main {
+    grid-template-columns: 1fr 1.5fr 1fr;
+    gap: 15px;
+    padding: 15px;
+  }
+
+  .nav-bar {
+    height: 70px;
+  }
+
+  .nav-icon {
+    font-size: 1.3rem;
+  }
+
+  .nav-label {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-main {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .gauge-left {
+    order: 2;
+  }
+
+  .car-center {
+    order: 1;
+  }
+
+  .gauge-right {
+    order: 3;
+  }
+
+  .nav-bar {
+    height: 65px;
+  }
+
+  .nav-icon {
+    font-size: 1.2rem;
+  }
+
+  .nav-label {
+    font-size: 0.65rem;
+  }
+}

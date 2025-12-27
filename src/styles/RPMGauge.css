@@ -1,0 +1,32 @@
+.rpm-gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+}
+
+.rpm-svg {
+  width: 100%;
+  max-width: 220px;
+  height: auto;
+  filter: drop-shadow(0 2px 8px rgba(177, 18, 26, 0.2));
+}
+
+@media (max-width: 1200px) {
+  .rpm-svg {
+    max-width: 180px;
+  }
+}
+
+@media (max-width: 768px) {
+  .rpm-gauge {
+    padding: 10px;
+  }
+  
+  .rpm-svg {
+    max-width: 140px;
+  }
+}

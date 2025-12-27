@@ -1,0 +1,77 @@
+import React, { useState, useEffect } from 'react';
+import Car3D from '../components/Car3D';
+import SpeedDisplay from '../components/SpeedDisplay';
+import RPMGauge from '../components/RPMGauge';
+import StatusBar from '../components/StatusBar';
+import obdConnector from '../utils/obdConnector';
+import '../styles/HomeScreen.css';
+
+function HomeScreen({ onNavigate }) {
+  const [time, setTime] = useState(new Date());
+  const [speed, setSpeed] = useState(0);
+  const [rpm, setRPM] = useState(0);
+  const [obdConnected, setObdConnected] = useState(false);
+
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    obdConnector.connect();
+
+    const handleOBDUpdate = (data) => {
+      setSpeed(data.speed);
+      setObdConnected(data.connected);
+      setRPM(data.speed * 35 + Math.random() * 200);
+    };
+
+    obdConnector.subscribe(handleOBDUpdate);
+
+    return () => {
+      obdConnector.unsubscribe(handleOBDUpdate);
+    };
+  }, []);
+
+  const navItems = [
+    { id: 1, name: 'Navigation', icon: '🗺' },
+    { id: 2, name: 'Music', icon: '♫' },
+    { id: 3, name: 'Phone', icon: '☎' },
+    { id: 4, name: 'Apps', icon: '⊞', action: () => onNavigate('apps') },
+  ];
+
+  return (
+    <div className="home-screen">
+      <StatusBar time={time} />
+      
+      <div className="dashboard-main">
+        <div className="gauge-left">
+          <RPMGauge rpm={rpm} />
+        </div>
+
+        <div className="car-center">
+          <Car3D />
+        </div>
+
+        <div className="gauge-right">
+          <SpeedDisplay obdConnected={obdConnected} speed={speed} />
+        </div>
+      </div>
+
+      <div className="nav-bar">
+        {navItems.map(item => (
+          <button 
+            key={item.id}
+            className="nav-item"
+            onClick={item.action || null}
+          >
+            <span className="nav-icon">{item.icon}</span>
+            <span className="nav-label">{item.name}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default HomeScreen;
