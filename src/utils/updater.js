@@ -4,7 +4,8 @@ import androidBridge from './androidBridge';
 const repoFromEnv = process.env.REACT_APP_GITHUB_REPO || '';
 
 function parseVersion(v) {
-  return (v || '0.0.0').replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0);
+  const cleaned = (v || '0.0.0').replace(/^v/, '').replace(/[a-zA-Z]+.*$/, '');
+  return cleaned.split('.').map(n => parseInt(n, 10) || 0);
 }
 
 function isNewer(latest, current) {
@@ -37,10 +38,16 @@ async function fetchLatestRelease(repo) {
 export async function checkForUpdate(repo = repoFromEnv) {
   if (!repo) return { available: false };
   const currentVersion = await androidBridge.getAppVersion();
+  console.log('[Updater] Current version:', currentVersion || '(empty)');
   const latest = await fetchLatestRelease(repo);
+  console.log('[Updater] Latest release:', latest);
   if (!latest || !latest.version) return { available: false };
-  if (!currentVersion) return { available: !!latest.apkUrl, latest: latest.version, apkUrl: latest.apkUrl };
+  if (!currentVersion) {
+    console.log('[Updater] No current version detected, showing update');
+    return { available: !!latest.apkUrl, latest: latest.version, apkUrl: latest.apkUrl };
+  }
   const newer = isNewer(latest.version, currentVersion);
+  console.log('[Updater] Version comparison:', { current: currentVersion, latest: latest.version, isNewer: newer });
   return { available: newer && !!latest.apkUrl, latest: latest.version, current: currentVersion, apkUrl: latest.apkUrl };
 }
 

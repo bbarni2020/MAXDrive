@@ -2,6 +2,8 @@ import { useRef, useEffect, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { ThreeMFLoader, OrbitControls } from 'three-stdlib';
 import * as THREE from 'three';
+import androidBridge from '../utils/androidBridge';
+import { checkForUpdate } from '../utils/updater';
 
 function CarModel() {
   const groupRef =  useRef();
@@ -100,8 +102,37 @@ function Controls() {
 }
 
 function Car3D() {
+  const [clickCount, setClickCount] = useState(0);
+  const [versionInfo, setVersionInfo] = useState(null);
+  const clickTimerRef = useRef(null);
+
+  const handleClick = async () => {
+    const newCount = clickCount + 1;
+    setClickCount(newCount);
+
+    if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
+    
+    clickTimerRef.current = setTimeout(() => {
+      setClickCount(0);
+    }, 2000);
+
+    if (newCount === 2) {
+      const currentVersion = await androidBridge.getAppVersion();
+      setVersionInfo({ type: 'current', version: currentVersion || 'Unknown' });
+      setTimeout(() => setVersionInfo(null), 3000);
+    } else if (newCount === 3) {
+      const updateInfo = await checkForUpdate();
+      setVersionInfo({ type: 'latest', version: updateInfo?.latest || 'Unknown' });
+      setTimeout(() => setVersionInfo(null), 3000);
+      setClickCount(0);
+    }
+  };
+
   return (
-    <div style={{ width: '100%', height: '100%', background: '#0B0C0E' }}>
+    <div 
+      style={{ width: '100%', height: '100%', background: '#0B0C0E', position: 'relative', cursor: 'pointer' }}
+      onClick={handleClick}
+    >
       <Canvas 
         camera={{ position: [0, 1.5, 4], fov: 45 }}
         gl={{ alpha: false, antialias: true }}
@@ -116,6 +147,32 @@ function Car3D() {
         <CarModel />
         <Controls />
       </Canvas>
+      {versionInfo && (
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          background: 'rgba(20, 22, 26, 0.95)',
+          border: '1px solid #B1121A',
+          borderRadius: '12px',
+          padding: '16px 24px',
+          color: '#B5B8BD',
+          fontSize: '1rem',
+          fontWeight: '600',
+          textAlign: 'center',
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
+          pointerEvents: 'none',
+          zIndex: 10
+        }}>
+          <div style={{ fontSize: '0.75rem', color: '#8E9399', marginBottom: '4px' }}>
+            {versionInfo.type === 'current' ? 'Current Version' : 'Latest Version'}
+          </div>
+          <div style={{ color: '#E11D2E', fontSize: '1.2rem' }}>
+            {versionInfo.version}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

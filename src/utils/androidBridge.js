@@ -58,11 +58,15 @@ class AndroidAppBridge {
   async getAppVersion() {
     if (this.isAndroid && window.Android?.getAppVersion) {
       try {
-        return window.Android.getAppVersion();
-      } catch (err) {
+        const ver = window.Android.getAppVersion();
+        console.log('[AndroidBridge] getAppVersion returned:', ver);
+        return ver;
+      } catch (e) {
+        console.warn('[AndroidBridge] getAppVersion error:', e);
         return '';
       }
     }
+    console.log('[AndroidBridge] getAppVersion: Not in Android WebView');
     return '';
   }
 
