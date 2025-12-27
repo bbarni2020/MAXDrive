@@ -37,6 +37,7 @@ function AppAssignmentsScreen({ onNavigate }) {
 
   const saveAssignments = () => {
     localStorage.setItem('appAssignments', JSON.stringify(assignments));
+    window.dispatchEvent(new Event('appAssignmentsChanged'));
     onNavigate('settings');
   };
 

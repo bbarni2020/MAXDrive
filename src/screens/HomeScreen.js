@@ -56,6 +56,21 @@ function HomeScreen({ onNavigate, onStartUpdate }) {
     }
   }, []);
 
+  useEffect(() => {
+    const handler = () => {
+      const saved = localStorage.getItem('appAssignments');
+      if (saved) {
+        try {
+          setAppAssignments(JSON.parse(saved));
+        } catch (e) {
+          console.warn('Failed to parse app assignments on event', e);
+        }
+      }
+    };
+    window.addEventListener('appAssignmentsChanged', handler);
+    return () => window.removeEventListener('appAssignmentsChanged', handler);
+  }, []);
+
   const navItems = [
     { 
       id: 1, 

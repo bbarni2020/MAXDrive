@@ -22,7 +22,6 @@ import android.provider.Settings;
 import android.util.Base64;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
 import androidx.core.content.FileProvider;
 
@@ -338,18 +337,5 @@ public class MainActivity extends BridgeActivity {
         WebView wv = getBridge().getWebView();
         wv.getSettings().setJavaScriptEnabled(true);
         wv.addJavascriptInterface(new WebAppInterface(this, wv), "Android");
-        
-        wv.setWebViewClient(new WebViewClient() {
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
-                view.evaluateJavascript(
-                    "(function() {" +
-                    "  var style = document.createElement('style');" +
-                    "  style.innerHTML = '* { -webkit-tap-highlight-color: transparent !important; outline: none !important; }';" +
-                    "  document.head.appendChild(style);" +
-                    "})()", null);
-            }
-        });
     }
 }
