@@ -1,15 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import AppCard from './AppCard';
 import androidBridge from '../utils/androidBridge';
-import SettingsScreen from '../screens/SettingsScreen';
 import '../styles/AppsOverlay.css';
 
-function AppsOverlay({ onClose }) {
+function AppsOverlay({ onClose, onNavigate }) {
   const [allApps, setAllApps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isClosing, setIsClosing] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
 
   const loadApps = useCallback(async () => {
     setLoading(true);
@@ -17,7 +15,13 @@ function AppsOverlay({ onClose }) {
     try {
       const apps = await androidBridge.getInstalledApps();
       const filteredApps = Array.isArray(apps) ? apps.filter(app => app.packageName !== 'com.maxdrive.app') : [];
-      setAllApps(filteredApps.sort((a, b) => (a.name || '').localeCompare(b.name || '')));
+      const settingsApp = {
+        packageName: 'com.maxdrive.settings',
+        name: 'Settings',
+        icon: '⚙️'
+      };
+      const allAppsWithSettings = [settingsApp, ...filteredApps].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      setAllApps(allAppsWithSettings);
     } catch (err) {
       setError('Failed to load apps');
       setAllApps([]);
@@ -38,17 +42,14 @@ function AppsOverlay({ onClose }) {
   }, [onClose]);
 
   const handleAppClick = useCallback((app) => {
-    if (app?.packageName === 'settings') {
-      setShowSettings(true);
+    if (app?.packageName === 'com.maxdrive.settings') {
+      onNavigate('settings');
+      handleClose();
     } else if (app?.packageName) {
       androidBridge.launchApp(app.packageName);
       handleClose();
     }
-  }, [handleClose]);
-
-  const handleBackToApps = useCallback(() => {
-    setShowSettings(false);
-  }, []);
+  }, [handleClose, onNavigate]);
 
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {

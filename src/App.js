@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import HomeScreen from './screens/HomeScreen';
+import SettingsScreen from './screens/SettingsScreen';
+import AppAssignmentsScreen from './screens/AppAssignmentsScreen';
 import UpdateScreen from './screens/UpdateScreen';
 import UpdateActivity from './components/UpdateActivity';
 import './App.css';
@@ -46,6 +48,12 @@ function App() {
     <div className="app-container">
       <div style={{ display: activeScreen === 'home' ? 'block' : 'none' }}>
         <HomeScreen onNavigate={setActiveScreen} onStartUpdate={handleStartUpdate} />
+      </div>
+      <div style={{ display: activeScreen === 'settings' ? 'block' : 'none' }}>
+        <SettingsScreen onNavigate={setActiveScreen} />
+      </div>
+      <div style={{ display: activeScreen === 'app-assignments' ? 'block' : 'none' }}>
+        <AppAssignmentsScreen onNavigate={setActiveScreen} />
       </div>
       {activeScreen === 'update' && updateData && !updateMinimized && (
         <UpdateScreen
