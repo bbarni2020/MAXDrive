@@ -8,8 +8,12 @@ function App() {
 
   return (
     <div className="app-container">
-      {activeScreen === 'home' && <HomeScreen onNavigate={setActiveScreen} />}
-      {activeScreen === 'apps' && <AppsScreen onNavigate={setActiveScreen} />}
+      <div style={{ display: activeScreen === 'home' ? 'block' : 'none' }}>
+        <HomeScreen onNavigate={setActiveScreen} />
+      </div>
+      <div style={{ display: activeScreen === 'apps' ? 'block' : 'none' }}>
+        <AppsScreen onNavigate={setActiveScreen} />
+      </div>
     </div>
   );
 }

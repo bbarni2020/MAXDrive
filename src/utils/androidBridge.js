@@ -1,17 +1,25 @@
 class AndroidAppBridge {
   constructor() {
-    this.isAndroid = typeof window.Android !== 'undefined';
+    this.isAndroid = typeof window !== 'undefined' && typeof window.Android !== 'undefined';
     this.apps = [];
+    this.cacheTimestamp = 0;
+    this.cacheDuration = 60000;
   }
 
   async getInstalledApps() {
-    if (this.isAndroid && window.Android && window.Android.getInstalledApps) {
+    const now = Date.now();
+    if (this.apps.length > 0 && (now - this.cacheTimestamp) < this.cacheDuration) {
+      return this.apps;
+    }
+
+    if (this.isAndroid && window.Android?.getInstalledApps) {
       try {
         const appsJson = window.Android.getInstalledApps();
-        this.apps = JSON.parse(appsJson);
+        const parsed = JSON.parse(appsJson);
+        this.apps = Array.isArray(parsed) ? parsed.filter(app => app?.name && app?.packageName) : [];
+        this.cacheTimestamp = now;
         return this.apps;
       } catch (error) {
-        console.warn('Could not fetch Android apps:', error);
         return this.getFallbackApps();
       }
     }
@@ -20,10 +28,13 @@ class AndroidAppBridge {
   }
 
   launchApp(packageName) {
-    if (this.isAndroid && window.Android && window.Android.launchApp) {
-      window.Android.launchApp(packageName);
-    } else {
-      console.warn('Cannot launch app:', packageName, '- not in Android WebView');
+    if (!packageName) return;
+    if (this.isAndroid && window.Android?.launchApp) {
+      try {
+        window.Android.launchApp(packageName);
+      } catch (err) {
+        return;
+      }
     }
   }
 
@@ -45,10 +56,10 @@ class AndroidAppBridge {
   }
 
   async getAppVersion() {
-    if (this.isAndroid && window.Android && window.Android.getAppVersion) {
+    if (this.isAndroid && window.Android?.getAppVersion) {
       try {
         return window.Android.getAppVersion();
-      } catch (_) {
+      } catch (err) {
         return '';
       }
     }
@@ -56,18 +67,20 @@ class AndroidAppBridge {
   }
 
   async downloadAndInstallApk(url) {
-    if (this.isAndroid && window.Android && window.Android.downloadAndInstallApk) {
+    if (!url) return false;
+    if (this.isAndroid && window.Android?.downloadAndInstallApk) {
       try {
         return window.Android.downloadAndInstallApk(url);
-      } catch (e) {
-        console.warn('APK install failed:', e);
+      } catch (err) {
         return false;
       }
     }
     try {
       window.open(url, '_blank');
-    } catch (_) {}
-    return false;
+      return true;
+    } catch (err) {
+      return false;
+    }
   }
 }
 

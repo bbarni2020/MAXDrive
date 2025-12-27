@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import AppCard from '../components/AppCard';
 import androidBridge from '../utils/androidBridge';
 import '../styles/AppsScreen.css';
@@ -7,17 +7,25 @@ function AppsScreen({ onNavigate }) {
   const [allApps, setAllApps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     loadApps();
   }, []);
 
-  const loadApps = async () => {
+  const loadApps = useCallback(async () => {
     setLoading(true);
-    const apps = await androidBridge.getInstalledApps();
-    setAllApps(apps);
-    setLoading(false);
-  };
+    setError(null);
+    try {
+      const apps = await androidBridge.getInstalledApps();
+      setAllApps(Array.isArray(apps) ? apps.sort((a, b) => (a.name || '').localeCompare(b.name || '')) : []);
+    } catch (err) {
+      setError('Failed to load apps');
+      setAllApps([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const filteredApps = allApps;
 
@@ -32,9 +40,11 @@ function AppsScreen({ onNavigate }) {
   const prevPage = () => setPage(p => Math.max(p - 1, 0));
   const goToPage = (idx) => setPage(Math.max(0, Math.min(idx, pageCount - 1)));
 
-  const handleAppClick = (app) => {
-    androidBridge.launchApp(app.packageName);
-  };
+  const handleAppClick = useCallback((app) => {
+    if (app?.packageName) {
+      androidBridge.launchApp(app.packageName);
+    }
+  }, []);
 
   return (
     <div className="apps-screen">
@@ -57,9 +67,14 @@ function AppsScreen({ onNavigate }) {
             <div className="loading-spinner"></div>
             <p>Loading apps...</p>
           </div>
+        ) : error ? (
+          <div className="error-state">
+            <p>{error}</p>
+            <button onClick={loadApps} className="retry-button">Retry</button>
+          </div>
         ) : pagedApps.length > 0 ? (
-          pagedApps.map((app, index) => (
-            <AppCard key={app.packageName || index} app={app} onClick={() => handleAppClick(app)} />
+          pagedApps.map((app) => (
+            <AppCard key={app.packageName} app={app} onClick={handleAppClick} />
           ))
         ) : (
           <div className="no-results">

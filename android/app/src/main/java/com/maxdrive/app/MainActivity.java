@@ -41,20 +41,18 @@ class WebAppInterface {
         List<ApplicationInfo> apps = pm.getInstalledApplications(PackageManager.GET_META_DATA);
         JSONArray jsonArray = new JSONArray();
         for (ApplicationInfo appInfo : apps) {
-            if ((appInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
-                try {
-                    JSONObject obj = new JSONObject();
-                    String appName = pm.getApplicationLabel(appInfo).toString();
-                    String iconBase64 = getAppIconAsBase64(pm, appInfo);
-                    
-                    obj.put("name", appName);
-                    obj.put("packageName", appInfo.packageName);
-                    obj.put("icon", iconBase64);
-                    obj.put("category", "App");
-                    jsonArray.put(obj);
-                } catch (JSONException e) {
-                    // Ignore
-                }
+            try {
+                JSONObject obj = new JSONObject();
+                String appName = pm.getApplicationLabel(appInfo).toString();
+                String iconBase64 = getAppIconAsBase64(pm, appInfo);
+                boolean isSystemApp = (appInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
+                
+                obj.put("name", appName);
+                obj.put("packageName", appInfo.packageName);
+                obj.put("icon", iconBase64);
+                obj.put("category", isSystemApp ? "System" : "App");
+                jsonArray.put(obj);
+            } catch (JSONException e) {
             }
         }
         return jsonArray.toString();
