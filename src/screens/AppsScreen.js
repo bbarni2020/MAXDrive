@@ -43,7 +43,8 @@ function AppsScreen({ onNavigate }) {
           className="back-button"
           onClick={() => onNavigate('home')}
         >
-          ← Home
+          <span className="back-icon">←</span>
+          <span className="back-label">Home</span>
         </button>
         <h1 className="apps-title">Applications</h1>
       </div>

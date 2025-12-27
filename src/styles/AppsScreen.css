@@ -9,38 +9,60 @@
 }
 
 .apps-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
   align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid #14161A;
-  gap: 15px;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: rgba(20, 22, 26, 0.85);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid #1E2025;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
 }
 
 .back-button {
-  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: 600;
   border: 1px solid #1E2025;
-  border-radius: 4px;
+  border-radius: 9999px;
   cursor: pointer;
-  background: #14161A;
+  background: rgba(20, 22, 26, 0.6);
   color: #B5B8BD;
   transition: all 0.2s ease;
   flex-shrink: 0;
 }
 
 .back-button:hover {
-  background: #1A1D22;
-  border-color: #E11D2E;
+  background: rgba(26, 29, 34, 0.7);
+  border-color: #B1121A;
   color: #E11D2E;
+  box-shadow: 0 0 0 2px rgba(177, 18, 26, 0.12);
+}
+
+.back-icon {
+  font-size: 1rem;
+  color: #8E9399;
+}
+
+.back-button:hover .back-icon {
+  color: #B1121A;
+}
+
+.back-label {
+  letter-spacing: 0.2px;
 }
 
 .apps-title {
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   font-weight: 600;
   color: #B5B8BD;
-  letter-spacing: -0.5px;
-  flex: 1;
+  letter-spacing: 0.2px;
   margin: 0;
 }
 
