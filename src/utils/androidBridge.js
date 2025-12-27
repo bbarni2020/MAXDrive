@@ -72,18 +72,40 @@ class AndroidAppBridge {
 
   async downloadAndInstallApk(url) {
     if (!url) return false;
-    if (this.isAndroid && window.Android?.downloadAndInstallApk) {
-      try {
-        return window.Android.downloadAndInstallApk(url);
-      } catch (err) {
-        return false;
+    
+    return new Promise((resolve) => {
+      if (this.isAndroid && window.Android?.downloadAndInstallApk) {
+        try {
+          window.Android.downloadAndInstallApk(url);
+          
+          const checkInstallation = setInterval(() => {
+            if (window.Android?.isApkInstalled && window.Android.isApkInstalled()) {
+              clearInterval(checkInstallation);
+              resolve(true);
+            }
+          }, 1000);
+          
+          setTimeout(() => {
+            clearInterval(checkInstallation);
+            resolve(true);
+          }, 120000);
+        } catch (err) {
+          resolve(false);
+        }
+      } else {
+        try {
+          window.open(url, '_blank');
+          resolve(true);
+        } catch (err) {
+          resolve(false);
+        }
       }
-    }
-    try {
-      window.open(url, '_blank');
-      return true;
-    } catch (err) {
-      return false;
+    });
+  }
+
+  registerDownloadProgressCallback(callback) {
+    if (this.isAndroid && window.Android) {
+      window.Android.onDownloadProgress = callback;
     }
   }
 }

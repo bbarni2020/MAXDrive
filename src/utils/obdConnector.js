@@ -3,6 +3,7 @@ class OBDConnector {
     this.connected = false;
     this.socket = null;
     this.speed = 0;
+    this.rpm = 0;
     this.callbacks = [];
     this.devMode = process.env.REACT_APP_DEV_MODE === 'true';
     this.devInterval = null;
@@ -11,21 +12,18 @@ class OBDConnector {
   startDevMode() {
     this.connected = true;
     this.notifyCallbacks();
-    
     if (this.devInterval) clearInterval(this.devInterval);
-    
     this.devInterval = setInterval(() => {
       const currentSpeed = this.speed;
       const change = (Math.random() - 0.5) * 15;
       let newSpeed = currentSpeed + change;
-      
       newSpeed = Math.max(0, Math.min(200, newSpeed));
-      
       if (Math.random() > 0.8) {
         newSpeed = Math.random() * 60;
       }
-      
       this.speed = Math.round(newSpeed);
+      // Simulate RPM as 800-4000 based on speed
+      this.rpm = Math.round(800 + this.speed * 20 + Math.random() * 200);
       this.notifyCallbacks();
     }, 800);
   }
@@ -77,20 +75,23 @@ class OBDConnector {
   parseOBDData(data) {
     try {
       const parsed = JSON.parse(data);
-      
       if (parsed.speed !== undefined) {
         this.speed = parseFloat(parsed.speed);
-      } else if (parsed.rpm !== undefined) {
-        this.notifyCallbacks();
       }
-      
+      if (parsed.rpm !== undefined) {
+        this.rpm = parseFloat(parsed.rpm);
+      }
       this.notifyCallbacks();
     } catch (e) {
       const speedMatch = data.match(/speed[:\s]+(\d+\.?\d*)/i);
       if (speedMatch) {
         this.speed = parseFloat(speedMatch[1]);
-        this.notifyCallbacks();
       }
+      const rpmMatch = data.match(/rpm[:\s]+(\d+\.?\d*)/i);
+      if (rpmMatch) {
+        this.rpm = parseFloat(rpmMatch[1]);
+      }
+      this.notifyCallbacks();
     }
   }
 
@@ -111,7 +112,8 @@ class OBDConnector {
   notifyCallbacks() {
     this.callbacks.forEach(cb => cb({
       connected: this.connected,
-      speed: this.speed
+      speed: this.speed,
+      rpm: this.rpm
     }));
   }
 
@@ -126,6 +128,10 @@ class OBDConnector {
 
   getSpeed() {
     return this.speed;
+  }
+
+  getRPM() {
+    return this.rpm;
   }
 
   isConnected() {

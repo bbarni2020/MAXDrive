@@ -6,8 +6,9 @@ import obdConnector from '../utils/obdConnector';
 import { checkForUpdate, performUpdate } from '../utils/updater';
 import UpdateBanner from '../components/UpdateBanner';
 import '../styles/HomeScreen.css';
+import { FaMapMarkedAlt, FaBroadcastTower, FaCar, FaThLarge } from 'react-icons/fa';
 
-function HomeScreen({ onNavigate }) {
+function HomeScreen({ onNavigate, onStartUpdate }) {
   const [speed, setSpeed] = useState(0);
   const [rpm, setRPM] = useState(0);
   const [obdConnected, setObdConnected] = useState(false);
@@ -19,7 +20,7 @@ function HomeScreen({ onNavigate }) {
     const handleOBDUpdate = (data) => {
       setSpeed(data.speed);
       setObdConnected(data.connected);
-      setRPM(data.speed * 35 + Math.random() * 200);
+      setRPM(data.rpm !== undefined ? data.rpm : 0);
     };
 
     obdConnector.subscribe(handleOBDUpdate);
@@ -39,10 +40,10 @@ function HomeScreen({ onNavigate }) {
   }, []);
 
   const navItems = [
-    { id: 1, name: 'Navigation', icon: '🗺' },
-    { id: 2, name: 'Music', icon: '♫' },
-    { id: 3, name: 'Phone', icon: '☎' },
-    { id: 4, name: 'Apps', icon: '⊞', action: () => onNavigate('apps') },
+    { id: 1, name: 'Navigation', icon: <FaMapMarkedAlt /> },
+    { id: 2, name: 'Radio', icon: <FaBroadcastTower /> },
+    { id: 3, name: 'CarPlay', icon: <FaCar /> },
+    { id: 4, name: 'Apps', icon: <FaThLarge />, action: () => onNavigate('apps') },
   ];
 
   return (
@@ -64,7 +65,7 @@ function HomeScreen({ onNavigate }) {
       {updateInfo && updateInfo.available && (
         <UpdateBanner
           version={updateInfo.latest}
-          onUpdate={() => performUpdate(updateInfo.apkUrl)}
+          onUpdate={() => onStartUpdate(updateInfo.latest, updateInfo.apkUrl)}
         />
       )}
 

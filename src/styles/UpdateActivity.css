@@ -1,0 +1,104 @@
+.update-activity {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9998;
+  background: rgba(15, 16, 20, 0.98);
+  border: 1px solid #2E3139;
+  border-radius: 16px;
+  padding: 16px 20px;
+  min-width: 400px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.update-activity:hover {
+  transform: translateX(-50%) translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8);
+  border-color: #3E4149;
+}
+
+.update-activity.error {
+  border-color: rgba(244, 67, 54, 0.4);
+}
+
+.update-activity.completed {
+  border-color: rgba(76, 175, 80, 0.4);
+}
+
+.activity-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.activity-icon {
+  font-size: 28px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(74, 144, 226, 0.1);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.update-activity.error .activity-icon {
+  background: rgba(244, 67, 54, 0.1);
+}
+
+.update-activity.completed .activity-icon {
+  background: rgba(76, 175, 80, 0.1);
+}
+
+.activity-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.activity-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #FFFFFF;
+  line-height: 1.2;
+}
+
+.activity-status {
+  font-size: 12px;
+  color: #8B8F99;
+  line-height: 1.2;
+}
+
+.activity-progress {
+  flex-shrink: 0;
+}
+
+.circular-progress {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-value {
+  position: absolute;
+  font-size: 10px;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+@media (max-width: 768px) {
+  .update-activity {
+    min-width: auto;
+    width: calc(100% - 40px);
+    max-width: 400px;
+  }
+}
