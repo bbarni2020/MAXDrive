@@ -50,7 +50,7 @@ function AppsScreen({ onNavigate }) {
 
       {/* Search removed */}
 
-      <div className="apps-grid" key={currentPage}>
+      <div className="apps-grid">
         {loading ? (
           <div className="loading-state">
             <div className="loading-spinner"></div>
