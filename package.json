@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/cli": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
     "@fontsource/inter": "^5.2.8",
     "@react-three/drei": "^9.86.0",
     "@react-three/fiber": "^8.14.0",
