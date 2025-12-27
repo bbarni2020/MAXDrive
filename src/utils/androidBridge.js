@@ -43,6 +43,32 @@ class AndroidAppBridge {
       { name: 'Contacts', packageName: 'com.android.contacts', icon: '👤', category: 'Communication' },
     ];
   }
+
+  async getAppVersion() {
+    if (this.isAndroid && window.Android && window.Android.getAppVersion) {
+      try {
+        return window.Android.getAppVersion();
+      } catch (_) {
+        return '';
+      }
+    }
+    return '';
+  }
+
+  async downloadAndInstallApk(url) {
+    if (this.isAndroid && window.Android && window.Android.downloadAndInstallApk) {
+      try {
+        return window.Android.downloadAndInstallApk(url);
+      } catch (e) {
+        console.warn('APK install failed:', e);
+        return false;
+      }
+    }
+    try {
+      window.open(url, '_blank');
+    } catch (_) {}
+    return false;
+  }
 }
 
 const androidBridge = new AndroidAppBridge();

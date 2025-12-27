@@ -5,13 +5,14 @@ function RPMGauge({ rpm = 0 }) {
   const maxRPM = 7000;
   const redlineRPM = 6000;
   const [displayRpm, setDisplayRpm] = useState(0);
+  const displayRef = useRef(0);
   const fromRef = useRef(0);
   const toRef = useRef(0);
   const startRef = useRef(0);
   const duration = 500;
 
   useEffect(() => {
-    fromRef.current = displayRpm;
+    fromRef.current = displayRef.current;
     toRef.current = Math.max(0, Math.min(rpm, maxRPM));
     startRef.current = performance.now();
 
@@ -23,6 +24,7 @@ function RPMGauge({ rpm = 0 }) {
       const eased = easeOutCubic(t);
       const val = fromRef.current + (toRef.current - fromRef.current) * eased;
       setDisplayRpm(val);
+      displayRef.current = val;
       if (t < 1) raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);

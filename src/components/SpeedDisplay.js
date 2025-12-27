@@ -5,11 +5,12 @@ function SpeedDisplay({ obdConnected, speed }) {
   const speedThreshold = 120;
   const [displaySpeed, setDisplaySpeed] = useState(0);
   const [pulse, setPulse] = useState(false);
+  const displayRef = useRef(0);
   const isHighSpeed = displaySpeed >= speedThreshold;
   const isDevMode = process.env.REACT_APP_DEV_MODE === 'true';
 
   useEffect(() => {
-    const from = displaySpeed;
+    const from = displayRef.current;
     const to = Math.max(0, speed);
     const duration = 400;
     const start = performance.now();
@@ -18,7 +19,9 @@ function SpeedDisplay({ obdConnected, speed }) {
     const step = (now) => {
       const t = Math.min(1, (now - start) / duration);
       const eased = easeOutCubic(t);
-      setDisplaySpeed(from + (to - from) * eased);
+      const val = from + (to - from) * eased;
+      setDisplaySpeed(val);
+      displayRef.current = val;
       if (t < 1) raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);

@@ -3,12 +3,15 @@ import Car3D from '../components/Car3D';
 import SpeedDisplay from '../components/SpeedDisplay';
 import RPMGauge from '../components/RPMGauge';
 import obdConnector from '../utils/obdConnector';
+import { checkForUpdate, performUpdate } from '../utils/updater';
+import UpdateBanner from '../components/UpdateBanner';
 import '../styles/HomeScreen.css';
 
 function HomeScreen({ onNavigate }) {
   const [speed, setSpeed] = useState(0);
   const [rpm, setRPM] = useState(0);
   const [obdConnected, setObdConnected] = useState(false);
+  const [updateInfo, setUpdateInfo] = useState(null);
 
   useEffect(() => {
     obdConnector.connect();
@@ -24,6 +27,15 @@ function HomeScreen({ onNavigate }) {
     return () => {
       obdConnector.unsubscribe(handleOBDUpdate);
     };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const info = await checkForUpdate();
+      if (mounted && info && info.available) setUpdateInfo(info);
+    })();
+    return () => { mounted = false; };
   }, []);
 
   const navItems = [
@@ -48,6 +60,13 @@ function HomeScreen({ onNavigate }) {
           <SpeedDisplay obdConnected={obdConnected} speed={speed} />
         </div>
       </div>
+
+      {updateInfo && updateInfo.available && (
+        <UpdateBanner
+          version={updateInfo.latest}
+          onUpdate={() => performUpdate(updateInfo.apkUrl)}
+        />
+      )}
 
       <div className="nav-bar">
         {navItems.map(item => (
