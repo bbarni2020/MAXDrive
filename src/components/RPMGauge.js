@@ -1,11 +1,36 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import '../styles/RPMGauge.css';
 
 function RPMGauge({ rpm = 0 }) {
   const maxRPM = 7000;
   const redlineRPM = 6000;
-  const angle = (rpm / maxRPM) * 180;
-  const isRedline = rpm >= redlineRPM;
+  const [displayRpm, setDisplayRpm] = useState(0);
+  const fromRef = useRef(0);
+  const toRef = useRef(0);
+  const startRef = useRef(0);
+  const duration = 500;
+
+  useEffect(() => {
+    fromRef.current = displayRpm;
+    toRef.current = Math.max(0, Math.min(rpm, maxRPM));
+    startRef.current = performance.now();
+
+    let raf;
+    const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+    const step = (now) => {
+      const elapsed = now - startRef.current;
+      const t = Math.min(1, elapsed / duration);
+      const eased = easeOutCubic(t);
+      const val = fromRef.current + (toRef.current - fromRef.current) * eased;
+      setDisplayRpm(val);
+      if (t < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [rpm]);
+
+  const angle = (displayRpm / maxRPM) * 180;
+  const isRedline = displayRpm >= redlineRPM;
 
   return (
     <div className="rpm-gauge">
@@ -35,7 +60,9 @@ function RPMGauge({ rpm = 0 }) {
           strokeDasharray={`${(angle / 180) * 251} 251`}
           strokeLinecap="round"
           opacity={rpm > 0 ? 1 : 0.3}
+          className={isRedline ? 'rpm-arc redline' : 'rpm-arc'}
         />
+
 
         <text 
           x="100" 
@@ -45,7 +72,7 @@ function RPMGauge({ rpm = 0 }) {
           fontWeight="600" 
           fill={isRedline ? '#E11D2E' : '#B5B8BD'}
         >
-          {Math.round(rpm / 100) / 10}
+          {Math.round(displayRpm / 100) / 10}
         </text>
         <text 
           x="100" 

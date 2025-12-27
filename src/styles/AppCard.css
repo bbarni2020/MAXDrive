@@ -1,43 +1,61 @@
 .app-card {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  padding: 15px;
-  border-radius: 6px;
+  justify-content: center;
+  padding: 16px;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: none;
   user-select: none;
-  min-height: 75px;
-  background: #14161A;
-  border: 1px solid #1E2025;
+  background: transparent;
+  border: none;
+  aspect-ratio: 1 / 1;
+  min-height: 160px;
+  animation: card-in 0.25s ease both;
 }
 
 .app-card:hover {
-  background: #1A1D22;
-  border-color: #B1121A;
-  box-shadow: 0 0 0 2px rgba(177, 18, 26, 0.1);
+  background: transparent;
+  box-shadow: none;
+  transform: translateY(-2px);
 }
 
 .app-card:active {
   transform: scale(0.98);
 }
+.app-card-icon-wrap {
+  width: 76px;
+  height: 76px;
+  border-radius: 18px;
+  background: transparent;
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
+}
+
+.app-card:hover .app-card-icon-wrap {
+  border-color: #B1121A;
+  box-shadow: 0 0 12px rgba(177, 18, 26, 0.25);
+}
 
 .app-card-icon {
-  font-size: 1.8rem;
-  margin-right: 12px;
-  flex-shrink: 0;
+  font-size: 2rem;
   line-height: 1;
-  opacity: 0.85;
+  opacity: 0.95;
 }
 
 .app-card-info {
-  flex: 1;
-  min-width: 0;
+  text-align: center;
 }
 
 .app-card-name {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: #B5B8BD;
   overflow: hidden;
@@ -46,36 +64,23 @@
 }
 
 .app-card-category {
-  margin: 3px 0 0 0;
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: #8E9399;
-  opacity: 0.8;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: none;
 }
 
 @media (max-width: 768px) {
   .app-card {
-    flex-direction: column;
-    text-align: center;
-    min-height: 90px;
-    justify-content: center;
-    padding: 12px 8px;
+    min-height: 140px;
+    padding: 12px;
   }
-
   .app-card-icon {
-    font-size: 1.6rem;
-    margin-right: 0;
-    margin-bottom: 6px;
+    font-size: 1.8rem;
   }
-
   .app-card-name {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
   }
+}
 
-  .app-card-category {
-    font-size: 0.65rem;
-  }
+@keyframes card-in {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
 }

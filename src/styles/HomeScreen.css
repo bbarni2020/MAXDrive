@@ -37,10 +37,11 @@
 .nav-bar {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1px;
+  gap: 12px;
   background: #14161A;
-  border-top: 1px solid #8E9399;
-  height: 80px;
+  border-top: 1px solid #1E2025;
+  padding: 12px;
+  height: 120px;
 }
 
 .nav-item {
@@ -49,15 +50,18 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: #0B0C0E;
-  border: none;
+  background: #14161A;
+  border: 1px solid #1E2025;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
   padding: 12px;
 }
 
 .nav-item:hover {
-  background: #14161A;
+  background: #1A1D22;
+  border-color: #B1121A;
+  box-shadow: 0 0 0 2px rgba(177, 18, 26, 0.12);
 }
 
 .nav-item:active {
@@ -65,7 +69,7 @@
 }
 
 .nav-icon {
-  font-size: 1.5rem;
+  font-size: 2rem;
   color: #8E9399;
   transition: color 0.2s ease;
 }
@@ -75,16 +79,16 @@
 }
 
 .nav-label {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #8E9399;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #B5B8BD;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
   transition: color 0.2s ease;
 }
 
 .nav-item:hover .nav-label {
-  color: #B5B8BD;
+  color: #E11D2E;
 }
 
 @media (max-width: 1200px) {
@@ -95,15 +99,17 @@
   }
 
   .nav-bar {
-    height: 70px;
+    height: 110px;
+    padding: 10px;
+    gap: 10px;
   }
 
   .nav-icon {
-    font-size: 1.3rem;
+    font-size: 1.8rem;
   }
 
   .nav-label {
-    font-size: 0.7rem;
+    font-size: 0.8rem;
   }
 }
 
@@ -128,7 +134,7 @@
   }
 
   .nav-bar {
-    height: 65px;
+    height: 100px;
   }
 
   .nav-icon {

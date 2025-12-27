@@ -2,20 +2,13 @@ import React, { useState, useEffect } from 'react';
 import Car3D from '../components/Car3D';
 import SpeedDisplay from '../components/SpeedDisplay';
 import RPMGauge from '../components/RPMGauge';
-import StatusBar from '../components/StatusBar';
 import obdConnector from '../utils/obdConnector';
 import '../styles/HomeScreen.css';
 
 function HomeScreen({ onNavigate }) {
-  const [time, setTime] = useState(new Date());
   const [speed, setSpeed] = useState(0);
   const [rpm, setRPM] = useState(0);
   const [obdConnected, setObdConnected] = useState(false);
-
-  useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   useEffect(() => {
     obdConnector.connect();
@@ -42,8 +35,6 @@ function HomeScreen({ onNavigate }) {
 
   return (
     <div className="home-screen">
-      <StatusBar time={time} />
-      
       <div className="dashboard-main">
         <div className="gauge-left">
           <RPMGauge rpm={rpm} />

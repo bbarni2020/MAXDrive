@@ -1,25 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AppCard from '../components/AppCard';
+import androidBridge from '../utils/androidBridge';
 import '../styles/AppsScreen.css';
 
 function AppsScreen({ onNavigate }) {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [allApps, setAllApps] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
 
-  const allApps = [
-    { id: 1, name: 'Music Player', icon: '♫', category: 'Entertainment', color: '#dc2626' },
-    { id: 2, name: 'Phone', icon: '☎', category: 'Communication', color: '#991b1b' },
-    { id: 3, name: 'Maps Navigation', icon: '🗺', category: 'Navigation', color: '#b91c1c' },
-    { id: 4, name: 'Messages', icon: '💬', category: 'Communication', color: '#ef4444' },
-    { id: 5, name: 'Settings', icon: '⚙', category: 'System', color: '#7f1d1d' },
-    { id: 6, name: 'Climate Control', icon: '❄', category: 'Vehicle', color: '#991b1b' },
-    { id: 7, name: 'Diagnostics', icon: '🔧', category: 'Vehicle', color: '#dc2626' },
-    { id: 8, name: 'Camera', icon: '📷', category: 'Vehicle', color: '#b91c1c' },
-  ];
+  useEffect(() => {
+    loadApps();
+  }, []);
 
-  const filteredApps = allApps.filter(app =>
-    app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    app.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const loadApps = async () => {
+    setLoading(true);
+    const apps = await androidBridge.getInstalledApps();
+    setAllApps(apps);
+    setLoading(false);
+  };
+
+  const filteredApps = allApps;
+
+  const pageSize = 8;
+  const pageCount = Math.max(1, Math.ceil(filteredApps.length / pageSize));
+  const currentPage = Math.min(page, pageCount - 1);
+  const start = currentPage * pageSize;
+  const end = start + pageSize;
+  const pagedApps = filteredApps.slice(start, end);
+
+  const nextPage = () => setPage(p => Math.min(p + 1, pageCount - 1));
+  const prevPage = () => setPage(p => Math.max(p - 1, 0));
+  const goToPage = (idx) => setPage(Math.max(0, Math.min(idx, pageCount - 1)));
+
+  const handleAppClick = (app) => {
+    androidBridge.launchApp(app.packageName);
+  };
 
   return (
     <div className="apps-screen">
@@ -33,20 +48,17 @@ function AppsScreen({ onNavigate }) {
         <h1 className="apps-title">Applications</h1>
       </div>
 
-      <div className="search-section">
-        <input
-          type="text"
-          className="search-input"
-          placeholder="Search apps..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
+      {/* Search removed */}
 
-      <div className="apps-grid">
-        {filteredApps.length > 0 ? (
-          filteredApps.map(app => (
-            <AppCard key={app.id} app={app} />
+      <div className="apps-grid" key={currentPage}>
+        {loading ? (
+          <div className="loading-state">
+            <div className="loading-spinner"></div>
+            <p>Loading apps...</p>
+          </div>
+        ) : pagedApps.length > 0 ? (
+          pagedApps.map((app, index) => (
+            <AppCard key={app.packageName || index} app={app} onClick={() => handleAppClick(app)} />
           ))
         ) : (
           <div className="no-results">
@@ -54,6 +66,23 @@ function AppsScreen({ onNavigate }) {
           </div>
         )}
       </div>
+
+      {!loading && filteredApps.length > 0 && (
+        <div className="pager">
+          <button className="pager-button" onClick={prevPage} disabled={currentPage === 0}>◀</button>
+          <div className="pager-dots">
+            {Array.from({ length: pageCount }).map((_, i) => (
+              <button
+                key={i}
+                className={`pager-dot ${i === currentPage ? 'active' : ''}`}
+                onClick={() => goToPage(i)}
+                aria-label={`Go to page ${i + 1}`}
+              />
+            ))}
+          </div>
+          <button className="pager-button" onClick={nextPage} disabled={currentPage === pageCount - 1}>▶</button>
+        </div>
+      )}
     </div>
   );
 }

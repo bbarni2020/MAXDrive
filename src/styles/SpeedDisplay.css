@@ -24,6 +24,15 @@
   transition: color 0.3s ease;
   letter-spacing: -2px;
 }
+.speed-number.pulse {
+  animation: speed-pulse 0.3s ease;
+}
+
+@keyframes speed-pulse {
+  0% { transform: scale(1); text-shadow: none; }
+  50% { transform: scale(1.04); text-shadow: 0 0 10px rgba(177, 18, 26, 0.25); }
+  100% { transform: scale(1); text-shadow: none; }
+}
 
 .speed-number.high-speed {
   color: #E11D2E;
