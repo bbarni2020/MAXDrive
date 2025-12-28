@@ -21,6 +21,13 @@ import android.os.Environment;
 import android.provider.Settings;
 import android.util.Base64;
 import android.webkit.JavascriptInterface;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
+import java.io.InputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.UUID;
 import android.webkit.WebView;
 
 import androidx.core.content.FileProvider;
@@ -43,11 +50,18 @@ class WebAppInterface {
     private DownloadManager downloadManager;
     private long currentDownloadId = -1;
     private DownloadCompleteReceiver downloadReceiver;
+    private BluetoothAdapter bluetoothAdapter;
+    private BluetoothSocket obdSocket;
+    private InputStream obdInputStream;
+    private Thread obdThread;
+    private volatile boolean obdRunning = false;
+    private boolean usingSerial = false;
 
     WebAppInterface(BridgeActivity activity, WebView webView) {
         this.activity = activity;
         this.webView = webView;
         this.downloadManager = (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
+        this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     }
 
     @JavascriptInterface
@@ -263,6 +277,99 @@ class WebAppInterface {
     public boolean isApkInstalled() {
         File apkFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "maxdrive-latest.apk");
         return !apkFile.exists();
+    }
+
+    @JavascriptInterface
+    public boolean startObd(String target) {
+        if (bluetoothAdapter == null) bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        try {
+            BluetoothDevice targetDevice = null;
+            if (bluetoothAdapter.isEnabled()) {
+                for (BluetoothDevice d : bluetoothAdapter.getBondedDevices()) {
+                    if (d == null) continue;
+                    String name = d.getName() != null ? d.getName() : "";
+                    String addr = d.getAddress() != null ? d.getAddress() : "";
+                    if ((target != null && !target.isEmpty() && (name.contains(target) || addr.equals(target))) || name.toLowerCase().contains("elm") || name.toLowerCase().contains("obd")) {
+                        targetDevice = d;
+                        break;
+                    }
+                }
+            }
+            if (targetDevice != null) {
+                UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+                obdSocket = targetDevice.createRfcommSocketToServiceRecord(uuid);
+                obdSocket.connect();
+                obdInputStream = obdSocket.getInputStream();
+                usingSerial = false;
+            } else {
+                String[] candidates = new String[]{"/dev/ttyUSB0","/dev/ttyUSB1","/dev/ttyS0","/dev/ttyS1","/dev/ttyMT1","/dev/ttyMT2"};
+                FileInputStream fis = null;
+                for (String path : candidates) {
+                    try {
+                        File f = new File(path);
+                        if (f.exists() && f.canRead()) {
+                            fis = new FileInputStream(f);
+                            break;
+                        }
+                    } catch (Exception ex) {}
+                }
+                if (fis == null) return false;
+                obdInputStream = fis;
+                usingSerial = true;
+            }
+            obdRunning = true;
+            obdThread = new Thread(() -> {
+                try {
+                    InputStream in = obdInputStream;
+                    byte[] buffer = new byte[1024];
+                    int read;
+                    StringBuilder sb = new StringBuilder();
+                    while (obdRunning && (read = in.read(buffer)) > 0) {
+                        sb.append(new String(buffer, 0, read));
+                        int idx;
+                        while ((idx = sb.indexOf("\n")) != -1) {
+                            String line = sb.substring(0, idx).trim();
+                            sb.delete(0, idx + 1);
+                            final String payload = line;
+                            webView.post(() -> webView.evaluateJavascript("if(window.onOBDData) window.onOBDData(" + org.json.JSONObject.quote(payload) + ");", null));
+                        }
+                    }
+                } catch (Exception e) {
+                } finally {
+                    try { if (obdInputStream != null) obdInputStream.close(); } catch (Exception e) {}
+                    try { if (obdSocket != null) obdSocket.close(); } catch (Exception e) {}
+                    obdRunning = false;
+                }
+            });
+            obdThread.start();
+            return true;
+        } catch (SecurityException se) {
+            return false;
+        } catch (Exception e) {
+            try { if (obdInputStream != null) obdInputStream.close(); } catch (Exception ex) {}
+            try { if (obdSocket != null) obdSocket.close(); } catch (Exception ex) {}
+            obdRunning = false;
+            return false;
+        }
+    }
+
+    @JavascriptInterface
+    public void stopObd() {
+        obdRunning = false;
+        try { if (obdInputStream != null) obdInputStream.close(); } catch (Exception e) {}
+        try { if (obdSocket != null) obdSocket.close(); } catch (Exception e) {}
+        obdInputStream = null;
+        obdSocket = null;
+        usingSerial = false;
+        if (obdThread != null) {
+            try { obdThread.join(200); } catch (Exception e) {}
+            obdThread = null;
+        }
+    }
+
+    @JavascriptInterface
+    public boolean isObdRunning() {
+        return obdRunning;
     }
 }
 

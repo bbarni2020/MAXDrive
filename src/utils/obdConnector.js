@@ -7,6 +7,8 @@ class OBDConnector {
     this.callbacks = [];
     this.devMode = process.env.REACT_APP_DEV_MODE === 'true';
     this.devInterval = null;
+    this.androidBridgeAvailable = typeof window !== 'undefined' && typeof window.Android !== 'undefined';
+    this._onOBDData = null;
   }
 
   startDevMode() {
@@ -44,13 +46,24 @@ class OBDConnector {
       return;
     }
 
+    if (this.androidBridgeAvailable && window.Android && window.Android.startObd) {
+      try {
+        const started = window.Android.startObd('');
+        if (started) {
+          this.connected = true;
+          this.setupAndroidCallback();
+          this.notifyCallbacks();
+          return;
+        }
+      } catch (e) {}
+    }
+
     try {
       const wsUrl = `ws://${host}:${port}`;
       this.socket = new WebSocket(wsUrl);
 
       this.socket.onopen = () => {
         this.connected = true;
-        console.log('OBD Connected');
         this.notifyCallbacks();
       };
 
@@ -59,7 +72,8 @@ class OBDConnector {
       };
 
       this.socket.onerror = (error) => {
-        console.warn('OBD Connection Error:', error);
+        this.connected = false;
+        this.notifyCallbacks();
       };
 
       this.socket.onclose = () => {
@@ -70,6 +84,16 @@ class OBDConnector {
     } catch (error) {
       console.warn('OBD Connection failed:', error);
     }
+  }
+
+  setupAndroidCallback() {
+    if (this._onOBDData) return;
+    this._onOBDData = (payload) => {
+      try {
+        this.parseOBDData(payload);
+      } catch (e) {}
+    };
+    window.onOBDData = this._onOBDData;
   }
 
   parseOBDData(data) {
@@ -101,6 +125,18 @@ class OBDConnector {
     }
   }
 
+  stopAndroid() {
+    if (this.androidBridgeAvailable && window.Android && window.Android.stopObd) {
+      try { window.Android.stopObd(); } catch (e) {}
+    }
+    if (this._onOBDData) {
+      try { delete window.onOBDData; } catch (e) {}
+      this._onOBDData = null;
+    }
+    this.connected = false;
+    this.notifyCallbacks();
+  }
+
   subscribe(callback) {
     this.callbacks.push(callback);
   }
@@ -120,6 +156,9 @@ class OBDConnector {
   disconnect() {
     if (this.devMode) {
       this.stopDevMode();
+    }
+    if (this.androidBridgeAvailable) {
+      this.stopAndroid();
     }
     if (this.socket) {
       this.socket.close();

@@ -18,3 +18,19 @@ html, body, #root {
   color: #B5B8BD;
   overflow: hidden;
 }
+
+button, a, input, textarea, select, .nav-item, .app-card, .settings-card, .assignment-option, .close-button {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-appearance: none;
+}
+
+button:focus, a:focus, .nav-item:focus, .app-card:focus, .settings-card:focus, .assignment-option:focus, .close-button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+button:active, .nav-item:active, .assignment-option:active, .settings-card:active, .app-card:active {
+  background-color: transparent !important;
+}

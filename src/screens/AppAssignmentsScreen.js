@@ -9,18 +9,14 @@ function AppAssignmentsScreen({ onNavigate }) {
     radio: null,
     carplay: null
   });
-  const [loading, setLoading] = useState(true);
 
   const loadApps = useCallback(async () => {
-    setLoading(true);
     try {
       const apps = await androidBridge.getInstalledApps();
       const filteredApps = Array.isArray(apps) ? apps.filter(app => app.packageName !== 'com.maxdrive.app') : [];
       setAllApps(filteredApps);
     } catch (err) {
       setAllApps([]);
-    } finally {
-      setLoading(false);
     }
   }, []);
 

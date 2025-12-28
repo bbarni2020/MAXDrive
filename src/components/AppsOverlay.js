@@ -17,8 +17,8 @@ function AppsOverlay({ onClose, onNavigate }) {
       const filteredApps = Array.isArray(apps) ? apps.filter(app => app.packageName !== 'com.maxdrive.app') : [];
       const settingsApp = {
         packageName: 'com.maxdrive.settings',
-        name: 'Settings',
-        icon: '⚙️'
+        name: 'MaxDrive Settings',
+        icon: '🧰'
       };
       const allAppsWithSettings = [settingsApp, ...filteredApps].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
       setAllApps(allAppsWithSettings);
