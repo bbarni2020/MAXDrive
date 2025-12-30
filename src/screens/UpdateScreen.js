@@ -65,7 +65,7 @@ function UpdateScreen({ version, apkUrl, onCancel, onComplete, onMinimize, onPro
       }
     };
     executeUpdate();
-  }, [onComplete, apkUrl, version]);
+  }, [onComplete, apkUrl, version, updateProgress, updateStatus]);
 
   return (
     <div className="update-screen">

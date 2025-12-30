@@ -1,13 +1,10 @@
 import axios from 'axios';
 import androidBridge from './androidBridge';
-
 const repoFromEnv = process.env.REACT_APP_GITHUB_REPO || '';
-
 function parseVersion(v) {
   const cleaned = (v || '0.0.0').replace(/^v/, '').replace(/[a-zA-Z]+.*$/, '');
   return cleaned.split('.').map(n => parseInt(n, 10) || 0);
 }
-
 function isNewer(latest, current) {
   const a = parseVersion(latest);
   const b = parseVersion(current);
@@ -19,7 +16,6 @@ function isNewer(latest, current) {
   }
   return false;
 }
-
 async function fetchLatestRelease(repo) {
   if (!repo) return null;
   const url = `https://api.github.com/repos/${repo}/releases/latest`;
@@ -33,7 +29,6 @@ async function fetchLatestRelease(repo) {
     return null;
   }
 }
-
 export async function checkForUpdate(repo = repoFromEnv) {
   if (!repo) return { available: false };
   const currentVersion = await androidBridge.getAppVersion();
@@ -45,7 +40,6 @@ export async function checkForUpdate(repo = repoFromEnv) {
   const newer = isNewer(latest.version, currentVersion);
   return { available: newer && !!latest.apkUrl, latest: latest.version, current: currentVersion, apkUrl: latest.apkUrl };
 }
-
 export async function performUpdate(apkUrl) {
   if (!apkUrl) return false;
   return androidBridge.downloadAndInstallApk(apkUrl);

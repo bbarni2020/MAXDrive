@@ -13,24 +13,17 @@
   border: none;
   aspect-ratio: 1 / 1;
   min-height: 160px;
-  animation: card-in 0.25s ease both;
+  animation: card-fade-in 0.08s linear both;
 }
 
 .app-card.compact {
   padding: 16px;
   min-height: 140px;
   border-radius: 16px;
-  animation: card-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: card-fade-in 0.08s linear both;
 }
 
-.app-card.compact:nth-child(1) { animation-delay: 0.05s; }
-.app-card.compact:nth-child(2) { animation-delay: 0.1s; }
-.app-card.compact:nth-child(3) { animation-delay: 0.15s; }
-.app-card.compact:nth-child(4) { animation-delay: 0.2s; }
-.app-card.compact:nth-child(5) { animation-delay: 0.25s; }
-.app-card.compact:nth-child(6) { animation-delay: 0.3s; }
-.app-card.compact:nth-child(7) { animation-delay: 0.35s; }
-.app-card.compact:nth-child(8) { animation-delay: 0.4s; }
+
 
 .app-card.compact .app-card-icon-wrap {
   width: 90px;
@@ -43,24 +36,13 @@
   line-height: 1.2;
 }
 
-.app-card:hover {
-  background: transparent;
-  box-shadow: none;
-  transform: translateY(-2px);
-}
 
-.app-card:active {
-  transform: scale(0.95);
-}
 
-.app-card.compact:hover {
-  transform: translateY(-3px) scale(1.05);
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
 
-.app-card.compact:active {
-  transform: scale(0.92);
-}
+
+
+
+
 .app-card-icon-wrap {
   width: 76px;
   height: 76px;
@@ -71,12 +53,11 @@
   align-items: center;
   justify-content: center;
   margin-bottom: 12px;
-  transition: all 0.2s ease;
+  transition: none;
 }
 
 .app-card:hover .app-card-icon-wrap {
-  border-color: #B1121A;
-  box-shadow: 0 0 12px rgba(177, 18, 26, 0.25);
+
 }
 
 .app-card-icon {
@@ -137,13 +118,7 @@
   }
 }
 
-@keyframes card-in {
-  from { 
-    opacity: 0; 
-    transform: scale(0.8) translateY(20px); 
-  }
-  to { 
-    opacity: 1; 
-    transform: scale(1) translateY(0); 
-  }
+@keyframes card-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

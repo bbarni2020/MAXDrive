@@ -64,30 +64,31 @@ function AppsOverlay({ onClose, onNavigate }) {
           <h2 className="apps-title">Apps</h2>
           <button className="close-button" onClick={handleClose}>✕</button>
         </div>
-
-        <div className="apps-content">
-          {loading ? (
-            <div className="loading-state">
-              <div className="loading-spinner"></div>
-              <p>Loading apps...</p>
-            </div>
-          ) : error ? (
-            <div className="error-state">
-              <p>{error}</p>
-              <button onClick={loadApps} className="retry-button">Retry</button>
-            </div>
-          ) : allApps.length > 0 ? (
-            <div className="apps-grid">
-              {allApps.map((app) => (
-                <AppCard key={app.packageName} app={app} onClick={handleAppClick} compact={true} />
-              ))}
-            </div>
-          ) : (
-            <div className="no-results">
-              <p>No apps found</p>
-            </div>
-          )}
-        </div>
+        {!isClosing && (
+          <div className="apps-content">
+            {loading ? (
+              <div className="loading-state">
+                <div className="loading-spinner"></div>
+                <p>Loading apps...</p>
+              </div>
+            ) : error ? (
+              <div className="error-state">
+                <p>{error}</p>
+                <button onClick={loadApps} className="retry-button">Retry</button>
+              </div>
+            ) : allApps.length > 0 ? (
+              <div className="apps-grid">
+                {allApps.map((app) => (
+                  <AppCard key={app.packageName} app={app} onClick={handleAppClick} compact={true} />
+                ))}
+              </div>
+            ) : (
+              <div className="no-results">
+                <p>No apps found</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

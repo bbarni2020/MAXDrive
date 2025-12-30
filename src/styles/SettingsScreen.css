@@ -70,30 +70,30 @@
   flex: 1;
   display: grid;
   grid-template-columns: repeat(1, 1fr);
-  gap: 18px;
-  padding: 20px;
+  gap: 14px;
+  padding: 14px;
   overflow-y: auto;
-  animation: grid-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: grid-in 0.08s linear;
   align-items: start;
 }
 
 .settings-card {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   align-items: center;
-  padding: 22px;
-  border-radius: 18px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 14px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255, 255, 255, 0.04);
   cursor: pointer;
-  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.32s;
-  backdrop-filter: blur(14px) saturate(120%);
-  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255,255,255,0.02);
+  transition: transform 0.08s linear, box-shadow 0.08s linear;
+  backdrop-filter: blur(8px) saturate(110%);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255,255,255,0.01);
 }
 
 .settings-card:hover {
-  transform: translateY(-6px) scale(1.01);
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55);
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
 }
 
 .settings-icon {
@@ -132,7 +132,7 @@
 }
 
 @keyframes grid-in {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0.7; transform: translateY(3px); }
   to { opacity: 1; transform: translateY(0); }
 }
 

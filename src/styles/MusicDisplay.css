@@ -10,21 +10,24 @@
   font-family: 'Inter', sans-serif;
 }
 
+
 .music-display.clickable {
   cursor: pointer;
-  transition: opacity 0.1s ease;
+  transition: opacity 0.05s linear;
   -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
   outline: none;
 }
 
+
 .music-display.clickable:hover {
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
+
 .music-display.clickable:active {
-  opacity: 0.85;
+  opacity: 0.92;
   background-color: transparent;
 }
 

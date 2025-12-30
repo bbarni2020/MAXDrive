@@ -27,6 +27,14 @@ function HomeScreen({ onNavigate, onStartUpdate }) {
     gpsConnector.connect();
     mediaConnector.connect();
 
+    if (androidBridge.isAndroid && window.Android?.hasMediaAccess && window.Android?.requestMediaAccess) {
+      try {
+        if (!window.Android.hasMediaAccess()) {
+          window.Android.requestMediaAccess();
+        }
+      } catch (e) {}
+    }
+
     const handleGPSUpdate = (data) => {
       setSpeed(data.speed);
       setGpsConnected(data.connected);
