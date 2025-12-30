@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import '../styles/SpeedDisplay.css';
 
-function SpeedDisplay({ obdConnected, speed }) {
+function SpeedDisplay({ gpsConnected, speed }) {
   const speedThreshold = 120;
   const [displaySpeed, setDisplaySpeed] = useState(0);
   const [pulse, setPulse] = useState(false);
@@ -44,8 +44,8 @@ function SpeedDisplay({ obdConnected, speed }) {
       
       <div className="speed-status">
         <div className="status-indicator">
-          <span className={`status-dot ${obdConnected ? 'connected' : 'disconnected'}`}></span>
-          <span className="status-text">{obdConnected ? 'Connected' : 'Disconnected'}</span>
+          <span className={`status-dot ${gpsConnected ? 'connected' : 'disconnected'}`}></span>
+          <span className="status-text">{gpsConnected ? 'GPS Connected' : 'GPS Disconnected'}</span>
         </div>
         {isDevMode && (
           <div className="dev-indicator">

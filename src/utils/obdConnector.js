@@ -24,7 +24,6 @@ class OBDConnector {
         newSpeed = Math.random() * 60;
       }
       this.speed = Math.round(newSpeed);
-      // Simulate RPM as 800-4000 based on speed
       this.rpm = Math.round(800 + this.speed * 20 + Math.random() * 200);
       this.notifyCallbacks();
     }, 800);
@@ -82,7 +81,6 @@ class OBDConnector {
         setTimeout(() => this.connect(host, port), 5000);
       };
     } catch (error) {
-      console.warn('OBD Connection failed:', error);
     }
   }
 

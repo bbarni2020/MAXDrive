@@ -126,9 +126,9 @@
   background: rgba(225, 29, 46, 0.10);
   border: 2px solid rgba(225, 29, 46, 0.28);
 }
-.update-icon.preparing { animation: rotate-spin 3s linear infinite; }
-.update-icon.downloading { animation: pulse 2s ease-in-out infinite; }
-.update-icon.installing { animation: float 3s ease-in-out infinite; }
+.update-icon.preparing { animation: rotate-spin 1s linear infinite; }
+.update-icon.downloading { animation: pulse 1s ease-in-out infinite; }
+.update-icon.installing { animation: float 1s ease-in-out infinite; }
 
 @keyframes rotate-spin {
   from { transform: rotate(0deg); }
@@ -170,7 +170,7 @@
   height: 100%;
   background: linear-gradient(90deg, #E11D2E 0%, #B1121A 100%);
   border-radius: 4px;
-  transition: width 0.3s ease;
+  transition: width 0.1s ease;
   box-shadow: 0 0 12px rgba(225, 29, 46, 0.3);
 }
 .progress-text {
@@ -256,7 +256,7 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.1s ease;
 }
 .cancel-button:hover:not(:disabled) {
   background: rgba(26, 29, 34, 0.9);
@@ -286,7 +286,7 @@
   justify-content: center;
   font-size: 54px;
   color: #4CAF50;
-  animation: scale-in 0.5s ease;
+  animation: scale-in 0.2s ease;
 }
 .completion-container h2 {
   font-size: 22px;
@@ -309,7 +309,7 @@
   font-size: 13px !important;
   color: #8E9399 !important;
   margin-top: 12px !important;
-  animation: fade-pulse 2s ease-in-out infinite;
+  animation: fade-pulse 1s ease-in-out infinite;
 }
 @keyframes scale-in {
   from { transform: scale(0.8); opacity: 0; }
@@ -373,7 +373,7 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.1s ease;
   border: none;
 }
 .retry-button {

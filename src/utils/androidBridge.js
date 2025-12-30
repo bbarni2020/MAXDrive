@@ -59,14 +59,11 @@ class AndroidAppBridge {
     if (this.isAndroid && window.Android?.getAppVersion) {
       try {
         const ver = window.Android.getAppVersion();
-        console.log('[AndroidBridge] getAppVersion returned:', ver);
         return ver;
       } catch (e) {
-        console.warn('[AndroidBridge] getAppVersion error:', e);
         return '';
       }
     }
-    console.log('[AndroidBridge] getAppVersion: Not in Android WebView');
     return '';
   }
 
@@ -107,6 +104,18 @@ class AndroidAppBridge {
     if (this.isAndroid && window.Android) {
       window.Android.onDownloadProgress = callback;
     }
+  }
+
+  getCurrentMedia() {
+    if (this.isAndroid && window.Android?.getCurrentMedia) {
+      try {
+        const mediaJson = window.Android.getCurrentMedia();
+        return JSON.parse(mediaJson);
+      } catch (error) {
+        return null;
+      }
+    }
+    return null;
   }
 }
 

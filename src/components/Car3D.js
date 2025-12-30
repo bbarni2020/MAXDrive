@@ -15,7 +15,6 @@ function CarModel() {
     loader.load(
       '/car-model.3mf',
       (group) => {
-        // Center the model at origin and scale to fit view
         const bbox = new THREE.Box3().setFromObject(group);
         const size = new THREE.Vector3();
         bbox.getSize(size);
@@ -24,7 +23,7 @@ function CarModel() {
         group.position.sub(center);
 
         const longest = Math.max(size.x, size.y, size.z) || 1;
-        const target = 3.0; // target longest dimension in scene units
+        const target = 3.0;
         const s = target / longest;
         group.scale.setScalar(s);
 
@@ -49,13 +48,10 @@ function CarModel() {
       },
       undefined,
       (error) => {
-        console.warn('3MF model load error:', error);
         setLoading(false);
       }
     );
   }, []);
-
-  // Keep the group ref to position lights and model
 
   return (
     <group ref={groupRef}>

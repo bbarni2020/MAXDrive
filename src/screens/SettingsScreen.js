@@ -32,7 +32,6 @@ function SettingsScreen({ onNavigate }) {
       a.remove();
       URL.revokeObjectURL(url);
     } catch (e) {
-      console.warn('Download failed', e);
     }
   };
 
@@ -42,7 +41,6 @@ function SettingsScreen({ onNavigate }) {
     } else {
       setObdLogs([]);
       setRecording(true);
-      // ensure connector is running
       if (!obdConnector.isConnected()) {
         try { obdConnector.connect(); } catch (e) {}
       }
@@ -63,7 +61,6 @@ function SettingsScreen({ onNavigate }) {
       const filename = `maxdrive-version-${new Date().toISOString().slice(0,10)}.txt`;
       downloadTextFile(filename, `version: ${ver}`);
     } catch (e) {
-      console.warn('Failed to get version', e);
     }
   };
 
@@ -110,7 +107,7 @@ function SettingsScreen({ onNavigate }) {
             key={option.id}
             className="settings-card"
             onClick={() => {
-              if (option.id === 'obd-logs') return; /* handled below */
+              if (option.id === 'obd-logs') return;
               option.onClick && option.onClick();
             }}
           >

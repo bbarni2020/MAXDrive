@@ -60,8 +60,6 @@ function AppsScreen({ onNavigate }) {
         <h1 className="apps-title">Applications</h1>
       </div>
 
-      {/* Search removed */}
-
       <div className="apps-grid">
         {loading ? (
           <div className="loading-state">

@@ -66,8 +66,6 @@
   margin: 0;
 }
 
-/* Search removed */
-
 .apps-grid {
   flex: 1;
   display: grid;

@@ -11,7 +11,7 @@
   min-width: 400px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.1s ease;
   backdrop-filter: blur(10px);
 }
 

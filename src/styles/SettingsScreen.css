@@ -164,7 +164,6 @@
   }
 }
 
-/* Wider layout: two-column grid and controls panel */
 @media (min-width: 1000px) {
   .settings-grid {
     grid-template-columns: 1fr 420px;

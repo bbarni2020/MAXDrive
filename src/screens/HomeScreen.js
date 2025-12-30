@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import Car3D from '../components/Car3D';
 import SpeedDisplay from '../components/SpeedDisplay';
-import RPMGauge from '../components/RPMGauge';
-import obdConnector from '../utils/obdConnector';
+import MusicDisplay from '../components/MusicDisplay';
+import gpsConnector from '../utils/gpsConnector';
+import mediaConnector from '../utils/mediaConnector';
 import { checkForUpdate } from '../utils/updater';
 import UpdateBanner from '../components/UpdateBanner';
-import AppsOverlay from '../components/AppsOverlay';import androidBridge from '../utils/androidBridge';import '../styles/HomeScreen.css';
+import AppsOverlay from '../components/AppsOverlay';
+import androidBridge from '../utils/androidBridge';
+import '../styles/HomeScreen.css';
 import { FaMapMarkedAlt, FaBroadcastTower, FaCar, FaThLarge } from 'react-icons/fa';
 
 function HomeScreen({ onNavigate, onStartUpdate }) {
   const [speed, setSpeed] = useState(0);
-  const [rpm, setRPM] = useState(0);
-  const [obdConnected, setObdConnected] = useState(false);
+  const [gpsConnected, setGpsConnected] = useState(false);
+  const [currentMedia, setCurrentMedia] = useState(null);
   const [updateInfo, setUpdateInfo] = useState(null);
   const [showAppsOverlay, setShowAppsOverlay] = useState(false);
   const [appAssignments, setAppAssignments] = useState({
@@ -21,18 +24,26 @@ function HomeScreen({ onNavigate, onStartUpdate }) {
   });
 
   useEffect(() => {
-    obdConnector.connect();
+    gpsConnector.connect();
+    mediaConnector.connect();
 
-    const handleOBDUpdate = (data) => {
+    const handleGPSUpdate = (data) => {
       setSpeed(data.speed);
-      setObdConnected(data.connected);
-      setRPM(data.rpm !== undefined ? data.rpm : 0);
+      setGpsConnected(data.connected);
     };
 
-    obdConnector.subscribe(handleOBDUpdate);
+    const handleMediaUpdate = (media) => {
+      setCurrentMedia(media);
+    };
+
+    gpsConnector.subscribe(handleGPSUpdate);
+    mediaConnector.subscribe(handleMediaUpdate);
 
     return () => {
-      obdConnector.unsubscribe(handleOBDUpdate);
+      gpsConnector.unsubscribe(handleGPSUpdate);
+      mediaConnector.unsubscribe(handleMediaUpdate);
+      gpsConnector.disconnect();
+      mediaConnector.disconnect();
     };
   }, []);
 
@@ -51,7 +62,6 @@ function HomeScreen({ onNavigate, onStartUpdate }) {
       try {
         setAppAssignments(JSON.parse(savedAssignments));
       } catch (err) {
-        console.warn('Failed to parse app assignments:', err);
       }
     }
   }, []);
@@ -63,7 +73,6 @@ function HomeScreen({ onNavigate, onStartUpdate }) {
         try {
           setAppAssignments(JSON.parse(saved));
         } catch (e) {
-          console.warn('Failed to parse app assignments on event', e);
         }
       }
     };
@@ -97,7 +106,7 @@ function HomeScreen({ onNavigate, onStartUpdate }) {
     <div className="home-screen">
       <div className="dashboard-main">
         <div className="gauge-left">
-          <RPMGauge rpm={rpm} />
+          <MusicDisplay currentMedia={currentMedia} carplayApp={appAssignments.carplay} />
         </div>
 
         <div className="car-center">
@@ -105,7 +114,7 @@ function HomeScreen({ onNavigate, onStartUpdate }) {
         </div>
 
         <div className="gauge-right">
-          <SpeedDisplay obdConnected={obdConnected} speed={speed} />
+          <SpeedDisplay obdConnected={gpsConnected} speed={speed} />
         </div>
       </div>
 

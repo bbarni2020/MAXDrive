@@ -30,7 +30,6 @@ async function fetchLatestRelease(repo) {
     const asset = (data.assets || []).find(a => /\.apk$/i.test(a.name));
     return asset ? { version: tag, apkUrl: asset.browser_download_url } : { version: tag, apkUrl: null };
   } catch (err) {
-    console.warn('Failed to fetch latest release:', err?.response?.status || err?.message || err);
     return null;
   }
 }
@@ -38,16 +37,12 @@ async function fetchLatestRelease(repo) {
 export async function checkForUpdate(repo = repoFromEnv) {
   if (!repo) return { available: false };
   const currentVersion = await androidBridge.getAppVersion();
-  console.log('[Updater] Current version:', currentVersion || '(empty)');
   const latest = await fetchLatestRelease(repo);
-  console.log('[Updater] Latest release:', latest);
   if (!latest || !latest.version) return { available: false };
   if (!currentVersion) {
-    console.log('[Updater] No current version detected, showing update');
     return { available: !!latest.apkUrl, latest: latest.version, apkUrl: latest.apkUrl };
   }
   const newer = isNewer(latest.version, currentVersion);
-  console.log('[Updater] Version comparison:', { current: currentVersion, latest: latest.version, isNewer: newer });
   return { available: newer && !!latest.apkUrl, latest: latest.version, current: currentVersion, apkUrl: latest.apkUrl };
 }
 

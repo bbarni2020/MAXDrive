@@ -38,7 +38,7 @@ function AppsOverlay({ onClose, onNavigate }) {
     setIsClosing(true);
     setTimeout(() => {
       onClose();
-    }, 300); // Match animation duration
+    }, 300);
   }, [onClose]);
 
   const handleAppClick = useCallback((app) => {
