@@ -6,49 +6,67 @@ class GPSConnector {
     this.connected = false;
     this.callbacks = [];
     this.watchId = null;
-    this.lastPosition = null;
-    this.lastTimestamp = null;
+    this.retryTimeout = null;
+    this.maxRetries = 3;
+    this.retryCount = 0;
   }
 
   async connect() {
     try {
       const permission = await Geolocation.checkPermissions();
       if (permission.location !== 'granted') {
-        await Geolocation.requestPermissions();
+        const requestResult = await Geolocation.requestPermissions();
+        if (requestResult.location !== 'granted') {
+          this.handleDisconnect();
+          return;
+        }
       }
 
       this.watchId = await Geolocation.watchPosition({
         enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 1000
+        timeout: 15000,
+        maximumAge: 2000
       }, (position, err) => {
         if (err) {
-          this.connected = false;
-          this.speed = 0;
-          this.notifyCallbacks();
+          this.handleError(err);
           return;
         }
 
-        this.connected = true;
-        this.calculateSpeed(position);
-        this.notifyCallbacks();
+        this.handlePosition(position);
       });
 
-    } catch (error) {
-      this.connected = false;
-      this.speed = 0;
+      this.connected = true;
+      this.retryCount = 0;
       this.notifyCallbacks();
+    } catch (error) {
+      this.handleDisconnect();
     }
   }
 
+  handlePosition(position) {
+    this.retryCount = 0;
+
+    if (position.coords.speed !== null && position.coords.speed >= 0) {
+      this.speed = Math.round(position.coords.speed * 3.6);
+    } else {
+      this.calculateSpeed(position);
+    }
+
+    this.notifyCallbacks();
+  }
+
   calculateSpeed(position) {
-    if (!this.lastPosition) {
+    if (!this.lastPosition || !this.lastTimestamp) {
       this.lastPosition = position;
       this.lastTimestamp = position.timestamp;
       return;
     }
 
-    const distance = this.getDistance(
+    if (position.coords.accuracy > 50) {
+      return;
+    }
+
+    const distance = this.haversineDistance(
       this.lastPosition.coords.latitude,
       this.lastPosition.coords.longitude,
       position.coords.latitude,
@@ -56,15 +74,19 @@ class GPSConnector {
     );
 
     const timeDiff = (position.timestamp - this.lastTimestamp) / 1000;
-    const speedMps = distance / timeDiff;
-    this.speed = Math.round(speedMps * 3.6);
+    if (timeDiff > 0) {
+      const speedMps = distance / timeDiff;
+      if (speedMps >= 0 && speedMps < 83.33) {
+        this.speed = Math.round(speedMps * 3.6);
+      }
+    }
 
     this.lastPosition = position;
     this.lastTimestamp = position.timestamp;
   }
 
-  getDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371e3;
+  haversineDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371000;
     const φ1 = lat1 * Math.PI / 180;
     const φ2 = lat2 * Math.PI / 180;
     const Δφ = (lat2 - lat1) * Math.PI / 180;
@@ -78,14 +100,38 @@ class GPSConnector {
     return R * c;
   }
 
+  handleError(err) {
+    if (this.retryCount < this.maxRetries) {
+      this.retryCount++;
+      this.retryTimeout = setTimeout(() => {
+        this.reconnect();
+      }, 2000 * this.retryCount);
+    } else {
+      this.handleDisconnect();
+    }
+  }
+
+  reconnect() {
+    this.disconnect();
+    this.connect();
+  }
+
+  handleDisconnect() {
+    this.connected = false;
+    this.speed = 0;
+    this.notifyCallbacks();
+  }
+
   disconnect() {
     if (this.watchId) {
       Geolocation.clearWatch({ id: this.watchId });
       this.watchId = null;
     }
-    this.connected = false;
-    this.speed = 0;
-    this.notifyCallbacks();
+    if (this.retryTimeout) {
+      clearTimeout(this.retryTimeout);
+      this.retryTimeout = null;
+    }
+    this.handleDisconnect();
   }
 
   subscribe(callback) {
