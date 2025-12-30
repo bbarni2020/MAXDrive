@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { checkForUpdate, performUpdate } from '../utils/updater';
+import UpdateBanner from '../components/UpdateBanner';
 import '../styles/SettingsScreen.css';
 import obdConnector from '../utils/obdConnector';
 import androidBridge from '../utils/androidBridge';
@@ -7,6 +9,25 @@ function SettingsScreen({ onNavigate }) {
   const [recording, setRecording] = useState(false);
   const [obdLogs, setObdLogs] = useState([]);
   const [version, setVersion] = useState('');
+  const [updateInfo, setUpdateInfo] = useState(null);
+  const [updating, setUpdating] = useState(false);
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const info = await checkForUpdate();
+      if (mounted && info && info.available) setUpdateInfo(info);
+    })();
+    return () => { mounted = false; };
+  }, []);
+  const handleUpdate = async () => {
+    if (!updateInfo?.apkUrl) return;
+    setUpdating(true);
+    try {
+      await performUpdate(updateInfo.apkUrl);
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   useEffect(() => {
     if (!recording) return;
@@ -90,6 +111,9 @@ function SettingsScreen({ onNavigate }) {
 
   return (
     <div className="settings-screen">
+      {updateInfo && updateInfo.available && (
+        <UpdateBanner version={updateInfo.latest} onUpdate={handleUpdate} />
+      )}
       <div className="settings-header">
         <button
           className="back-button"
@@ -148,6 +172,11 @@ function SettingsScreen({ onNavigate }) {
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <button className="update-button" onClick={handleExportVersion}>Export Version</button>
             <div style={{ color: '#8e9399' }}>{version ? `v${version}` : ''}</div>
+            {updateInfo && updateInfo.available && (
+              <button className="update-button" onClick={handleUpdate} disabled={updating} style={{ marginLeft: 8 }}>
+                {updating ? 'Updating...' : 'Update'}
+              </button>
+            )}
           </div>
         </div>
       </div>

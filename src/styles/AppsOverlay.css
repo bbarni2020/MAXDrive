@@ -15,7 +15,7 @@
 }
 
 .apps-overlay.closing {
-  animation: overlay-fade-out-simple 0.06s linear;
+  animation: overlay-fade-out-smooth 0.18s cubic-bezier(0.4,0,0.2,1);
 }
 
 .apps-menu {
@@ -35,7 +35,7 @@
 }
 
 .apps-menu.closing {
-  animation: menu-fade-out 0.06s linear;
+  animation: menu-fade-out-smooth 0.18s cubic-bezier(0.4,0,0.2,1);
 }
 
 .apps-header {
@@ -75,6 +75,7 @@
   flex: 1;
   overflow-y: auto;
   padding: 20px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .apps-grid {
@@ -160,13 +161,19 @@
   }
 }
 
-@keyframes overlay-fade-out-simple {
+@keyframes overlay-fade-out-smooth {
   from { opacity: 1; }
   to { opacity: 0; }
 }
-@keyframes menu-fade-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
+@keyframes menu-fade-out-smooth {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(32px);
+  }
 }
 
 @keyframes menu-slide-up {

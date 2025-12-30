@@ -56,10 +56,6 @@
   transition: none;
 }
 
-.app-card:hover .app-card-icon-wrap {
-
-}
-
 .app-card-icon {
   font-size: 2rem;
   line-height: 1;
