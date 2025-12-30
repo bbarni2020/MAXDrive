@@ -3,11 +3,14 @@ import { checkForUpdate, performUpdate } from '../utils/updater';
 import UpdateBanner from '../components/UpdateBanner';
 import '../styles/SettingsScreen.css';
 import obdConnector from '../utils/obdConnector';
+import gpsConnector from '../utils/gpsConnector';
 import androidBridge from '../utils/androidBridge';
 
 function SettingsScreen({ onNavigate }) {
   const [recording, setRecording] = useState(false);
   const [obdLogs, setObdLogs] = useState([]);
+  const [gpsRecording, setGpsRecording] = useState(false);
+  const [gpsLogs, setGpsLogs] = useState([]);
   const [version, setVersion] = useState('');
   const [updateInfo, setUpdateInfo] = useState(null);
   const [updating, setUpdating] = useState(false);
@@ -40,6 +43,18 @@ function SettingsScreen({ onNavigate }) {
     obdConnector.subscribe(subscriber);
     return () => obdConnector.unsubscribe(subscriber);
   }, [recording]);
+
+  useEffect(() => {
+    if (!gpsRecording) return;
+
+    const subscriber = (data) => {
+      const entry = `${new Date().toISOString()} | connected:${data.connected} | speed:${data.speed} | lat:${data.latitude.toFixed(6)} | lon:${data.longitude.toFixed(6)} | acc:${data.accuracy.toFixed(1)}m`;
+      setGpsLogs(prev => [...prev, entry]);
+    };
+
+    gpsConnector.subscribe(subscriber);
+    return () => gpsConnector.unsubscribe(subscriber);
+  }, [gpsRecording]);
 
   const downloadTextFile = (filename, text) => {
     try {
@@ -75,6 +90,27 @@ function SettingsScreen({ onNavigate }) {
     downloadTextFile(filename, text);
   };
 
+  const handleToggleGpsRecording = () => {
+    if (gpsRecording) {
+      setGpsRecording(false);
+      gpsConnector.disableTestMode();
+    } else {
+      setGpsLogs([]);
+      setGpsRecording(true);
+      gpsConnector.enableTestMode();
+      if (!gpsConnector.connected) {
+        try { gpsConnector.connect(); } catch (e) {}
+      }
+    }
+  };
+
+  const handleSaveGpsLogs = () => {
+    if (gpsLogs.length === 0) return;
+    const text = gpsLogs.join('\n');
+    const filename = `maxdrive-gps-logs-${new Date().toISOString().replace(/[:.]/g, '-')}.txt`;
+    downloadTextFile(filename, text);
+  };
+
   const handleExportVersion = async () => {
     try {
       const ver = await androidBridge.getAppVersion();
@@ -92,6 +128,13 @@ function SettingsScreen({ onNavigate }) {
       icon: '🔗',
       description: 'Configure which apps open for Navigation, Radio, and CarPlay buttons',
       onClick: () => onNavigate('app-assignments')
+    },
+    {
+      id: 'gps-test',
+      title: 'GPS Test',
+      icon: '📍',
+      description: 'Test GPS connection and view location data',
+      onClick: () => {}
     },
     {
       id: 'obd-logs',
@@ -125,58 +168,94 @@ function SettingsScreen({ onNavigate }) {
         <h1 className="settings-title">Settings</h1>
       </div>
 
-      <div className="settings-grid">
-        {settingsOptions.map((option) => (
-          <div
-            key={option.id}
-            className="settings-card"
-            onClick={() => {
-              if (option.id === 'obd-logs') return;
-              option.onClick && option.onClick();
-            }}
-          >
-            <div className="settings-icon">{option.icon}</div>
-            <div className="settings-content">
-              <h2 className="settings-card-title">{option.title}</h2>
-              <p className="settings-description">{option.description}</p>
+      <div className="settings-content">
+        <div className="settings-grid">
+          {settingsOptions.map((option) => (
+            <div
+              key={option.id}
+              className="settings-card"
+              onClick={() => {
+                if (option.id === 'obd-logs' || option.id === 'gps-test') return;
+                option.onClick && option.onClick();
+              }}
+            >
+              <div className="settings-icon">{option.icon}</div>
+              <div className="settings-content">
+                <h2 className="settings-card-title">{option.title}</h2>
+                <p className="settings-description">{option.description}</p>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="settings-controls">
-        <div className="panel">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div className="panel-title">OBD Logs</div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button className="update-button" onClick={handleToggleRecording}>{recording ? 'Stop' : 'Start'} Recording</button>
-              <button className="cancel-button" onClick={handleSaveLogs} disabled={obdLogs.length === 0}>Save Logs</button>
-            </div>
-          </div>
-          <div className="logs-container" style={{ height: 160 }}>
-            <div className="logs-header">OBD stream</div>
-            <div className="logs-content" style={{ padding: 8, overflowY: 'auto', fontFamily: 'monospace', fontSize: 12 }}>
-              {obdLogs.length === 0 ? (
-                <div style={{ color: '#8e9399' }}>No logs recorded</div>
-              ) : (
-                obdLogs.slice(-200).map((l, i) => (
-                  <div key={i} className="log-line info">{l}</div>
-                ))
-              )}
-            </div>
-          </div>
+          ))}
         </div>
 
-        <div className="panel">
-          <div className="panel-title">Version</div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <button className="update-button" onClick={handleExportVersion}>Export Version</button>
-            <div style={{ color: '#8e9399' }}>{version ? `v${version}` : ''}</div>
-            {updateInfo && updateInfo.available && (
-              <button className="update-button" onClick={handleUpdate} disabled={updating} style={{ marginLeft: 8 }}>
-                {updating ? 'Updating...' : 'Update'}
-              </button>
-            )}
+        <div className="settings-controls">
+          <div className="control-panel">
+            <div className="panel-header">
+              <div className="panel-title">OBD Logs</div>
+              <div className="panel-actions">
+                <button className="action-button" onClick={handleToggleRecording}>
+                  {recording ? 'Stop' : 'Start'}
+                </button>
+                <button className="action-button secondary" onClick={handleSaveLogs} disabled={obdLogs.length === 0}>
+                  Save
+                </button>
+              </div>
+            </div>
+            <div className="logs-container">
+              <div className="logs-content">
+                {obdLogs.length === 0 ? (
+                  <div className="no-data">No logs recorded</div>
+                ) : (
+                  obdLogs.slice(-50).map((l, i) => (
+                    <div key={i} className="log-line">{l}</div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="control-panel">
+            <div className="panel-header">
+              <div className="panel-title">GPS Test</div>
+              <div className="panel-actions">
+                <button className="action-button" onClick={handleToggleGpsRecording}>
+                  {gpsRecording ? 'Stop' : 'Start'}
+                </button>
+                <button className="action-button secondary" onClick={handleSaveGpsLogs} disabled={gpsLogs.length === 0}>
+                  Save
+                </button>
+              </div>
+            </div>
+            <div className="logs-container">
+              <div className="logs-content">
+                {gpsLogs.length === 0 ? (
+                  <div className="no-data">No GPS data recorded</div>
+                ) : (
+                  gpsLogs.slice(-50).map((l, i) => (
+                    <div key={i} className="log-line">{l}</div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="control-panel">
+            <div className="panel-header">
+              <div className="panel-title">Version</div>
+              <div className="panel-actions">
+                <button className="action-button" onClick={handleExportVersion}>
+                  Export
+                </button>
+                {updateInfo && updateInfo.available && (
+                  <button className="action-button update" onClick={handleUpdate} disabled={updating}>
+                    {updating ? 'Updating...' : 'Update'}
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className="version-info">
+              <span className="version-text">{version ? `v${version}` : 'Loading...'}</span>
+            </div>
           </div>
         </div>
       </div>

@@ -23,6 +23,7 @@ import android.os.Environment;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Base64;
+import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -65,7 +66,6 @@ class WebAppInterface {
     private Thread obdThread;
     private volatile boolean obdRunning = false;
     private final MediaSessionManager mediaSessionManager;
-    private final MediaSessionManager.OnActiveSessionsChangedListener sessionsListener;
 
     WebAppInterface(BridgeActivity activity, WebView webView) {
         this.activity = activity;
@@ -75,26 +75,19 @@ class WebAppInterface {
         this.mediaSessionManager = (MediaSessionManager) activity.getSystemService(Context.MEDIA_SESSION_SERVICE);
 
         if (this.mediaSessionManager != null) {
-            MediaSessionManager.OnActiveSessionsChangedListener l = new MediaSessionManager.OnActiveSessionsChangedListener() {
-                @Override
-                public void onActiveSessionsChanged(List<MediaController> controllers) {
-                    try {
-                        String media = getCurrentMedia();
-                        MediaNotificationListener.setCachedMedia(media);
-                    } catch (Exception ignored) {}
-                }
+            MediaSessionManager.OnActiveSessionsChangedListener sessionsListener = controllers -> {
+                try {
+                    String media = getCurrentMedia();
+                    MediaNotificationListener.setCachedMedia(media);
+                } catch (Exception ignored) {}
             };
-
-            this.sessionsListener = l;
 
             try {
                 ComponentName componentName = new ComponentName(activity, MediaNotificationListener.class);
-                this.mediaSessionManager.addOnActiveSessionsChangedListener(this.sessionsListener, componentName);
+                this.mediaSessionManager.addOnActiveSessionsChangedListener(sessionsListener, componentName);
             } catch (Exception e) {
-                try { this.mediaSessionManager.addOnActiveSessionsChangedListener(this.sessionsListener, null); } catch (Exception ignored) {}
+                try { this.mediaSessionManager.addOnActiveSessionsChangedListener(sessionsListener, null); } catch (Exception ignored) {}
             }
-        } else {
-            this.sessionsListener = null;
         }
     }
 
@@ -207,7 +200,7 @@ class WebAppInterface {
     public String getCurrentMedia() {
         try {
             if (mediaSessionManager != null) {
-                List<MediaController> controllers = null;
+                List<MediaController> controllers;
 
                 try {
                     ComponentName componentName = new ComponentName(activity, MediaNotificationListener.class);
@@ -223,8 +216,6 @@ class WebAppInterface {
 
                     for (MediaController controller : controllers) {
                         PlaybackState playbackState = controller.getPlaybackState();
-                        CharSequence titleForLog = null;
-                        try { MediaMetadata md = controller.getMetadata(); if (md != null) titleForLog = md.getText(MediaMetadata.METADATA_KEY_TITLE); } catch (Exception ignored) {}
                         if (playbackState != null) {
                             int state = playbackState.getState();
                             if (state == PlaybackState.STATE_PLAYING || state == PlaybackState.STATE_BUFFERING) {
@@ -286,15 +277,13 @@ class WebAppInterface {
                             String packageName = activeController.getPackageName();
                             if (packageName != null) media.put("packageName", packageName);
 
-                            String result = media.toString();
-                            return result;
+                            return media.toString();
                         }
                     }
                 }
             }
 
-            String cached = MediaNotificationListener.getCachedMedia();
-            return cached;
+            return MediaNotificationListener.getCachedMedia();
         } catch (Exception e) {
             return MediaNotificationListener.getCachedMedia();
         }
@@ -366,7 +355,8 @@ class WebAppInterface {
 
             File oldFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "maxdrive-latest.apk");
             if (oldFile.exists()) {
-                oldFile.delete();
+                boolean deleted = oldFile.delete();
+                if (!deleted) Log.w("WebAppInterface", "Could not delete old APK file");
             }
 
             DownloadManager.Request req = new DownloadManager.Request(Uri.parse(url))
@@ -421,6 +411,9 @@ class WebAppInterface {
                         cursor.close();
                     }
                     Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
                 } catch (Exception e) {
                     break;
                 }
@@ -545,17 +538,16 @@ class DownloadCompleteReceiver extends BroadcastReceiver {
             long downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
             
             DownloadManager.Query query = new DownloadManager.Query().setFilterById(downloadId);
-            Cursor cursor = dm.query(query);
-            
-            if (cursor != null && cursor.moveToFirst()) {
-                int statusIdx = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS);
-                if (statusIdx != -1) {
-                    int status = cursor.getInt(statusIdx);
-                    if (status == DownloadManager.STATUS_SUCCESSFUL) {
-                        installApk();
+            try (Cursor cursor = dm.query(query)) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    int statusIdx = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS);
+                    if (statusIdx != -1) {
+                        int status = cursor.getInt(statusIdx);
+                        if (status == DownloadManager.STATUS_SUCCESSFUL) {
+                            installApk();
+                        }
                     }
                 }
-                cursor.close();
             }
             activity.unregisterReceiver(this);
         } catch (Exception ignored) {}
@@ -573,7 +565,7 @@ class DownloadCompleteReceiver extends BroadcastReceiver {
                 activity.startActivity(intent);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("DownloadReceiver", "Failed to install APK", e);
         }
     }
 }

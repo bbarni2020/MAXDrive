@@ -4,6 +4,10 @@ class GPSConnector {
   constructor() {
     this.speed = 0;
     this.connected = false;
+    this.latitude = 0;
+    this.longitude = 0;
+    this.accuracy = 0;
+    this.testMode = false;
     this.callbacks = [];
     this.watchId = null;
     this.retryTimeout = null;
@@ -22,10 +26,19 @@ class GPSConnector {
         }
       }
 
+      try {
+        const initialPosition = await Geolocation.getCurrentPosition({
+          enableHighAccuracy: false,
+          timeout: 5000
+        });
+        this.handlePosition(initialPosition);
+      } catch (initialError) {
+      }
+
       this.watchId = await Geolocation.watchPosition({
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 2000
+        enableHighAccuracy: false,
+        timeout: 10000,
+        maximumAge: 3000
       }, (position, err) => {
         if (err) {
           this.handleError(err);
@@ -45,6 +58,12 @@ class GPSConnector {
 
   handlePosition(position) {
     this.retryCount = 0;
+
+    if (this.testMode) {
+      this.latitude = position.coords.latitude;
+      this.longitude = position.coords.longitude;
+      this.accuracy = position.coords.accuracy;
+    }
 
     if (position.coords.speed !== null && position.coords.speed >= 0) {
       this.speed = Math.round(position.coords.speed * 3.6);
@@ -119,6 +138,9 @@ class GPSConnector {
   handleDisconnect() {
     this.connected = false;
     this.speed = 0;
+    this.latitude = 0;
+    this.longitude = 0;
+    this.accuracy = 0;
     this.notifyCallbacks();
   }
 
@@ -142,10 +164,24 @@ class GPSConnector {
     this.callbacks = this.callbacks.filter(cb => cb !== callback);
   }
 
+  enableTestMode() {
+    this.testMode = true;
+  }
+
+  disableTestMode() {
+    this.testMode = false;
+    this.latitude = 0;
+    this.longitude = 0;
+    this.accuracy = 0;
+  }
+
   notifyCallbacks() {
     this.callbacks.forEach(callback => callback({
       speed: this.speed,
-      connected: this.connected
+      connected: this.connected,
+      latitude: this.latitude,
+      longitude: this.longitude,
+      accuracy: this.accuracy
     }));
   }
 }
