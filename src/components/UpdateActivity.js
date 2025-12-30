@@ -60,7 +60,7 @@ function UpdateActivity({ version, progress, status, onExpand }) {
                 cy="20"
                 r="16"
                 fill="none"
-                stroke={status === 'error' ? '#F44336' : status === 'completed' ? '#4CAF50' : '#4A90E2'}
+                stroke={status === 'error' ? '#F44336' : status === 'completed' ? '#4CAF50' : '#E11D2E'}
                 strokeWidth="3"
                 strokeDasharray={`${(progress / 100) * 100.5} 100.5`}
                 strokeLinecap="round"

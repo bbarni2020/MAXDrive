@@ -343,8 +343,15 @@ class WebAppInterface {
     @JavascriptInterface
     public boolean downloadAndInstallApk(String url) {
         try {
-            if (downloadManager == null) {
-                return false;
+            if (downloadManager == null) return false;
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                if (!activity.getPackageManager().canRequestPackageInstalls()) {
+                    Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES);
+                    intent.setData(Uri.parse("package:" + activity.getPackageName()));
+                    activity.startActivity(intent);
+                    return true;
+                }
             }
 
             if (downloadReceiver != null) {
@@ -406,6 +413,7 @@ class WebAppInterface {
                         if (statusIdx != -1) {
                             int status = cursor.getInt(statusIdx);
                             if (status == DownloadManager.STATUS_FAILED || status == DownloadManager.STATUS_SUCCESSFUL) {
+                                currentDownloadId = -1;
                                 cursor.close();
                                 break;
                             }
@@ -544,44 +552,26 @@ class DownloadCompleteReceiver extends BroadcastReceiver {
                 if (statusIdx != -1) {
                     int status = cursor.getInt(statusIdx);
                     if (status == DownloadManager.STATUS_SUCCESSFUL) {
-                        int uriIdx = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI);
-                        if (uriIdx != -1) {
-                            String uriString = cursor.getString(uriIdx);
-                            if (uriString != null) {
-                                installApk(Uri.parse(uriString));
-                            }
-                        }
+                        installApk();
                     }
                 }
                 cursor.close();
             }
-            
             activity.unregisterReceiver(this);
-        } catch (Exception ignored) {
-        }
+        } catch (Exception ignored) {}
     }
 
-    private void installApk(Uri apkUri) {
+    private void installApk() {
         try {
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            
-            Uri contentUri;
-            if ("file".equals(apkUri.getScheme())) {
-                String path = apkUri.getPath();
-                if (path != null) {
-                    File apkFile = new File(path);
-                    contentUri = FileProvider.getUriForFile(activity, activity.getPackageName() + ".fileprovider", apkFile);
-                } else {
-                    return;
-                }
-            } else {
-                contentUri = apkUri;
+            File apkFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "maxdrive-latest.apk");
+            if (apkFile.exists()) {
+                Uri contentUri = FileProvider.getUriForFile(activity, activity.getPackageName() + ".fileprovider", apkFile);
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setDataAndType(contentUri, "application/vnd.android.package-archive");
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                activity.startActivity(intent);
             }
-            
-            intent.setDataAndType(contentUri, "application/vnd.android.package-archive");
-            activity.startActivity(intent);
         } catch (Exception e) {
             e.printStackTrace();
         }

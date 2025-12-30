@@ -5,10 +5,24 @@ function UpdateScreen({ version, apkUrl, onCancel, onComplete, onMinimize, onPro
   const [progress, setProgress] = React.useState(0);
   const [error, setError] = React.useState(null);
   const updateStarted = React.useRef(false);
+  React.useEffect(() => {
+    return () => {
+      if (window.onDownloadProgress) {
+        delete window.onDownloadProgress;
+      }
+    };
+  }, []);
 
   React.useEffect(() => {
     if (updateStarted.current) return;
     updateStarted.current = true;
+    
+    window.onDownloadProgress = (downloadProgress) => {
+      if (typeof downloadProgress === 'number') {
+        setProgress(Math.min(downloadProgress, 99));
+      }
+    };
+    
     const executeUpdate = async () => {
       try {
         if (!apkUrl) {
@@ -41,27 +55,29 @@ function UpdateScreen({ version, apkUrl, onCancel, onComplete, onMinimize, onPro
                 }
               }, 2000);
             }
-          }, 300); // 100 steps * 300ms = 30 seconds
+          }, 300);
         } else {
           setStatus('downloading');
           setProgress(0);
-          if (window.Android?.registerDownloadProgressCallback) {
-            window.Android.registerDownloadProgressCallback((downloadProgress) => {
-              if (typeof downloadProgress === 'number') {
-                setProgress(Math.min(downloadProgress, 99));
+          
+          window.onDownloadProgress = (downloadProgress) => {
+            if (typeof downloadProgress === 'number') {
+              setProgress(Math.min(downloadProgress, 99));
+              if (downloadProgress >= 100) {
+                setProgress(100);
+                setStatus('installing');
               }
-            });
-          }
+            }
+          };
+          
           const installSuccess = await window.Android?.downloadAndInstallApk?.(apkUrl);
           if (!installSuccess) {
             setError('Failed to download and install APK. Please check your connection and try again.');
             setStatus('error');
             return;
           }
-          setProgress(95);
-          setStatus('installing');
+          
           await new Promise(resolve => setTimeout(resolve, 2000));
-          setProgress(100);
           setStatus('completed');
           if (onComplete) {
             setTimeout(() => {
@@ -132,6 +148,5 @@ function UpdateScreen({ version, apkUrl, onCancel, onComplete, onMinimize, onPro
     </div>
   );
 }
-// ...existing code...
 
 export default UpdateScreen;
