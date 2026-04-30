@@ -1,70 +1,108 @@
-# Getting Started with Create React App
+# MAXDrive
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+MAXDrive is a React + Capacitor dashboard for Android head units. The app is built around an in-car launcher layout with media status, app shortcuts, vehicle telemetry hooks, and an Android-specific update flow.
 
-## Available Scripts
+## Overview
 
-In the project directory, you can run:
+The current project is a single-page React interface wrapped for Android through Capacitor. The UI is split into a few main screens:
 
-### `npm start`
+- Home screen with the main dashboard
+- Settings screen for app configuration, OBD logging, GPS testing, and update checks
+- App assignment screen for mapping launcher buttons
+- Update screen plus minimized update activity for APK installs
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Native Android integration is exposed through a `window.Android` bridge. In the browser, the code falls back to safe defaults where possible.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Tech Stack
 
-### `npm test`
+- React 18
+- Capacitor 8
+- Three.js with `@react-three/fiber` and `@react-three/drei`
+- `axios` for network requests
+- `@capacitor/geolocation` for location access
+- `react-scripts` for the web build pipeline
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Current Features
 
-### `npm run build`
+- Car dashboard UI with vehicle-oriented layouts and animated sections
+- 3D car model rendering in the dashboard
+- Speed and RPM display components
+- Media integration through the Android media session bridge
+- Quick launch and app assignment support
+- OBD connector hooks for logging vehicle data
+- GPS connector hooks and a GPS test panel
+- Settings screen with log capture and export
+- OTA-style APK update flow with progress handling
+- Minimized update activity for long-running installs
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Project Structure
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- `src/App.js`: top-level screen routing and update state management
+- `src/screens/`: main app screens
+- `src/components/`: dashboard and utility UI components
+- `src/utils/`: Android bridge and data connectors
+- `src/styles/`: screen and component styles
+- `android/`: Capacitor Android project and native bridge code
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Setup
 
-### `npm run eject`
+Install dependencies:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```bash
+npm install
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Run the app in development mode:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```bash
+npm start
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Build the web app:
 
-## Learn More
+```bash
+npm run build
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+If you change the web build and need to refresh the Android wrapper, sync Capacitor:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```bash
+npx cap sync android
+```
 
-### Code Splitting
+## Android Build
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+This project is meant to be packaged into an Android app for a head unit. The native layer handles things the browser cannot do directly, including:
 
-### Analyzing the Bundle Size
+- reading installed apps from Android
+- launching apps from the launcher UI
+- querying media session state
+- downloading and installing APK updates
+- requesting install permissions when needed
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+To build and run on Android, use the Capacitor Android project under `android/` and open it in Android Studio after syncing.
 
-### Making a Progressive Web App
+## Runtime Notes
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+- Browser mode is useful for UI iteration, but Android-only functions depend on the `window.Android` bridge.
+- Update installation requires Android package-install permissions.
+- The UI currently includes GPS and OBD logging panels for testing and diagnostics.
+- Some animations and 3D rendering are heavy on low-RAM devices, which is relevant for older head units.
 
-### Advanced Configuration
+## Development Notes
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+- The app state is managed in React and screen changes are handled by swapping visible screens in `src/App.js`.
+- `src/utils/androidBridge.js` provides the web-side wrapper around native Android calls.
+- `android/app/src/main/java/com/maxdrive/app/MainActivity.java` contains the native bridge logic for media, downloads, and app integration.
 
-### Deployment
+## Testing
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+The current project uses the default React testing setup:
 
-### `npm run build` fails to minify
+```bash
+npm test
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## Build Output
+
+The production web build is generated in `build/`, and the Android project consumes that output when synced through Capacitor.
