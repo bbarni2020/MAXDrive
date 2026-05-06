@@ -122,7 +122,7 @@ function HomeScreen({ onNavigate, onStartUpdate }) {
         </div>
 
         <div className="gauge-right">
-          <SpeedDisplay obdConnected={gpsConnected} speed={speed} />
+          <SpeedDisplay gpsConnected={gpsConnected} speed={speed} />
         </div>
       </div>
 

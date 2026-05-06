@@ -11,8 +11,9 @@ class GPSConnector {
     this.callbacks = [];
     this.watchId = null;
     this.retryTimeout = null;
-    this.maxRetries = 3;
+    this.maxRetries = 5;
     this.retryCount = 0;
+    this.lastValidSpeed = 0;
   }
 
   async connect() {
@@ -28,17 +29,18 @@ class GPSConnector {
 
       try {
         const initialPosition = await Geolocation.getCurrentPosition({
-          enableHighAccuracy: false,
-          timeout: 5000
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
         });
         this.handlePosition(initialPosition);
       } catch (initialError) {
       }
 
       this.watchId = await Geolocation.watchPosition({
-        enableHighAccuracy: false,
-        timeout: 10000,
-        maximumAge: 3000
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 1000
       }, (position, err) => {
         if (err) {
           this.handleError(err);
@@ -59,14 +61,13 @@ class GPSConnector {
   handlePosition(position) {
     this.retryCount = 0;
 
-    if (this.testMode) {
-      this.latitude = position.coords.latitude;
-      this.longitude = position.coords.longitude;
-      this.accuracy = position.coords.accuracy;
-    }
+    this.latitude = position.coords.latitude;
+    this.longitude = position.coords.longitude;
+    this.accuracy = position.coords.accuracy || 0;
 
     if (position.coords.speed !== null && position.coords.speed >= 0) {
       this.speed = Math.round(position.coords.speed * 3.6);
+      this.lastValidSpeed = this.speed;
     } else {
       this.calculateSpeed(position);
     }
@@ -81,7 +82,8 @@ class GPSConnector {
       return;
     }
 
-    if (position.coords.accuracy > 50) {
+    if (position.coords.accuracy > 100) {
+      this.speed = this.lastValidSpeed;
       return;
     }
 
@@ -93,10 +95,11 @@ class GPSConnector {
     );
 
     const timeDiff = (position.timestamp - this.lastTimestamp) / 1000;
-    if (timeDiff > 0) {
+    if (timeDiff > 0 && timeDiff < 60) {
       const speedMps = distance / timeDiff;
-      if (speedMps >= 0 && speedMps < 83.33) {
+      if (speedMps >= 0 && speedMps <= 100) {
         this.speed = Math.round(speedMps * 3.6);
+        this.lastValidSpeed = this.speed;
       }
     }
 
@@ -124,23 +127,22 @@ class GPSConnector {
       this.retryCount++;
       this.retryTimeout = setTimeout(() => {
         this.reconnect();
-      }, 2000 * this.retryCount);
+      }, 1000 * this.retryCount);
     } else {
       this.handleDisconnect();
     }
   }
 
   reconnect() {
-    this.disconnect();
+    if (this.watchId) {
+      Geolocation.clearWatch({ id: this.watchId });
+      this.watchId = null;
+    }
     this.connect();
   }
 
   handleDisconnect() {
     this.connected = false;
-    this.speed = 0;
-    this.latitude = 0;
-    this.longitude = 0;
-    this.accuracy = 0;
     this.notifyCallbacks();
   }
 

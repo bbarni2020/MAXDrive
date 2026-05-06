@@ -10,26 +10,34 @@ function SpeedDisplay({ gpsConnected, speed }) {
   const isDevMode = process.env.REACT_APP_DEV_MODE === 'true';
 
   useEffect(() => {
+    const clampedSpeed = Math.max(0, Math.min(speed, 350));
     const from = displayRef.current;
-    const to = Math.max(0, speed);
-    const duration = 400;
+    const to = clampedSpeed;
+    const duration = 300;
     const start = performance.now();
     let raf;
     const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+    
     const step = (now) => {
       const t = Math.min(1, (now - start) / duration);
       const eased = easeOutCubic(t);
       const val = from + (to - from) * eased;
-      setDisplaySpeed(val);
+      setDisplaySpeed(Math.round(val));
       displayRef.current = val;
       if (t < 1) raf = requestAnimationFrame(step);
     };
+    
     raf = requestAnimationFrame(step);
-    if (Math.abs(to - from) > 5) {
+    
+    if (Math.abs(to - from) > 3) {
       setPulse(true);
-      const tid = setTimeout(() => setPulse(false), 300);
-      return () => { cancelAnimationFrame(raf); clearTimeout(tid); };
+      const tid = setTimeout(() => setPulse(false), 250);
+      return () => { 
+        cancelAnimationFrame(raf); 
+        clearTimeout(tid); 
+      };
     }
+    
     return () => cancelAnimationFrame(raf);
   }, [speed]);
 
