@@ -7,7 +7,7 @@ MAXDrive is a React + Capacitor dashboard for Android head units. The app is bui
 The current project is a single-page React interface wrapped for Android through Capacitor. The UI is split into a few main screens:
 
 - Home screen with the main dashboard
-- Settings screen for app configuration, OBD logging, GPS testing, and update checks
+- Settings screen for app configuration, GPS testing, and update checks
 - App assignment screen for mapping launcher buttons
 - Update screen plus minimized update activity for APK installs
 
@@ -26,10 +26,8 @@ Native Android integration is exposed through a `window.Android` bridge. In the 
 
 - Car dashboard UI with vehicle-oriented layouts and animated sections
 - 3D car model rendering in the dashboard
-- Speed and RPM display components
 - Media integration through the Android media session bridge
 - Quick launch and app assignment support
-- OBD connector hooks for logging vehicle data
 - GPS connector hooks and a GPS test panel
 - Settings screen with log capture and export
 - OTA-style APK update flow with progress handling
@@ -86,7 +84,7 @@ To build and run on Android, use the Capacitor Android project under `android/` 
 
 - Browser mode is useful for UI iteration, but Android-only functions depend on the `window.Android` bridge.
 - Update installation requires Android package-install permissions.
-- The UI currently includes GPS and OBD logging panels for testing and diagnostics.
+- The UI currently includes a GPS test panel for diagnostics.
 - Some animations and 3D rendering are heavy on low-RAM devices, which is relevant for older head units.
 
 ## Development Notes
