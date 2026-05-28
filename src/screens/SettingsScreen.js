@@ -2,13 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { checkForUpdate, performUpdate } from '../utils/updater';
 import UpdateBanner from '../components/UpdateBanner';
 import '../styles/SettingsScreen.css';
-import obdConnector from '../utils/obdConnector';
 import gpsConnector from '../utils/gpsConnector';
 import androidBridge from '../utils/androidBridge';
 
 function SettingsScreen({ onNavigate }) {
-  const [recording, setRecording] = useState(false);
-  const [obdLogs, setObdLogs] = useState([]);
   const [gpsRecording, setGpsRecording] = useState(false);
   const [gpsLogs, setGpsLogs] = useState([]);
   const [version, setVersion] = useState('');
@@ -31,18 +28,6 @@ function SettingsScreen({ onNavigate }) {
       setUpdating(false);
     }
   };
-
-  useEffect(() => {
-    if (!recording) return;
-
-    const subscriber = (data) => {
-      const entry = `${new Date().toISOString()} | connected:${data.connected} | speed:${data.speed} | rpm:${data.rpm}`;
-      setObdLogs(prev => [...prev, entry]);
-    };
-
-    obdConnector.subscribe(subscriber);
-    return () => obdConnector.unsubscribe(subscriber);
-  }, [recording]);
 
   useEffect(() => {
     if (!gpsRecording) return;
@@ -71,24 +56,7 @@ function SettingsScreen({ onNavigate }) {
     }
   };
 
-  const handleToggleRecording = () => {
-    if (recording) {
-      setRecording(false);
-    } else {
-      setObdLogs([]);
-      setRecording(true);
-      if (!obdConnector.isConnected()) {
-        try { obdConnector.connect(); } catch (e) {}
-      }
-    }
-  };
 
-  const handleSaveLogs = () => {
-    if (obdLogs.length === 0) return;
-    const text = obdLogs.join('\n');
-    const filename = `maxdrive-obd-logs-${new Date().toISOString().replace(/[:.]/g, '-')}.txt`;
-    downloadTextFile(filename, text);
-  };
 
   const handleToggleGpsRecording = () => {
     if (gpsRecording) {
@@ -137,13 +105,6 @@ function SettingsScreen({ onNavigate }) {
       onClick: () => {}
     },
     {
-      id: 'obd-logs',
-      title: 'OBD Logs',
-      icon: '📟',
-      description: 'Record and save raw OBD data stream',
-      onClick: () => {}
-    },
-    {
       id: 'version-export',
       title: 'Version',
       icon: '🔖',
@@ -175,7 +136,7 @@ function SettingsScreen({ onNavigate }) {
               key={option.id}
               className="settings-card"
               onClick={() => {
-                if (option.id === 'obd-logs' || option.id === 'gps-test') return;
+                if (option.id === 'gps-test') return;
                 option.onClick && option.onClick();
               }}
             >
@@ -189,31 +150,6 @@ function SettingsScreen({ onNavigate }) {
         </div>
 
         <div className="settings-controls">
-          <div className="control-panel">
-            <div className="panel-header">
-              <div className="panel-title">OBD Logs</div>
-              <div className="panel-actions">
-                <button className="action-button" onClick={handleToggleRecording}>
-                  {recording ? 'Stop' : 'Start'}
-                </button>
-                <button className="action-button secondary" onClick={handleSaveLogs} disabled={obdLogs.length === 0}>
-                  Save
-                </button>
-              </div>
-            </div>
-            <div className="logs-container">
-              <div className="logs-content">
-                {obdLogs.length === 0 ? (
-                  <div className="no-data">No logs recorded</div>
-                ) : (
-                  obdLogs.slice(-50).map((l, i) => (
-                    <div key={i} className="log-line">{l}</div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-
           <div className="control-panel">
             <div className="panel-header">
               <div className="panel-title">GPS Test</div>
